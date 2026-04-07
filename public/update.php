@@ -10,6 +10,7 @@
  *   2. Im Browser aufrufen und Admin-Passwort eingeben
  */
 
+define('UPDATER_VERSION', '1.0.5');
 define('GITHUB_REPO', 'jcapps-dev/jcapps-transfer');
 define('GITHUB_API',  'https://api.github.com/repos/' . GITHUB_REPO . '/releases/latest');
 
@@ -55,21 +56,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!$latest) {
         $error = 'GitHub konnte nicht erreicht werden.';
     } else {
-        $zip_url = $latest['zipball_url'];
-        $tmp     = sys_get_temp_dir() . '/jcapps-transfer-update-' . time() . '.zip';
-
-        if (!_update_download($zip_url, $tmp)) {
-            $error = 'Download fehlgeschlagen.';
+        // Schreibtest: kann PHP Dateien im App-Root überschreiben?
+        $write_test = $app_root . '/_write_test_' . time() . '.tmp';
+        if (!@file_put_contents($write_test, 'test')) {
+            $error = 'Keine Schreibrechte im App-Verzeichnis. Bitte manuell per FTP aktualisieren.';
         } else {
-            $result = _update_extract($tmp, $app_root);
-            @unlink($tmp);
+            @unlink($write_test);
 
-            if (!$result) {
-                $error = 'Update fehlgeschlagen. Bitte Schreibrechte prüfen.';
+            $zip_url = $latest['zipball_url'];
+            $tmp     = $app_root . '/_update_download_' . time() . '.zip';
+
+            if (!_update_download($zip_url, $tmp)) {
+                $error = 'Download fehlgeschlagen. Möglicherweise blockiert dein Hoster ausgehende Verbindungen.';
             } else {
-                // Update-Check-Cache leeren damit neue Version sofort erkannt wird
-                @unlink(TRANSFER_BASE . '/update_check.json');
-                $success = true;
+                $result = _update_extract($tmp, $app_root);
+                @unlink($tmp);
+
+                if (!$result) {
+                    $error = 'Entpacken fehlgeschlagen.';
+                } else {
+                    // Tatsächlich installierte Version lesen
+                    $ver_file = $app_root . '/public/admin/version.php';
+                    $installed = '?';
+                    if (is_file($ver_file)) {
+                        $ver_content = file_get_contents($ver_file);
+                        if (preg_match("/APP_VERSION',\s*'([^']+)'/", $ver_content, $m)) {
+                            $installed = $m[1];
+                        }
+                    }
+                    if ($installed === $latest_version) {
+                        @unlink(TRANSFER_BASE . '/update_check.json');
+                        $success = true;
+                    } else {
+                        $error = 'Update wurde durchgeführt, aber Version stimmt nicht überein (installiert: ' . htmlspecialchars($installed, ENT_QUOTES, 'UTF-8') . '). Bitte manuell per FTP aktualisieren.';
+                    }
+                }
             }
         }
     }
@@ -238,7 +259,7 @@ function _update_rmdir(string $dir): void {
         <?php endif; ?>
     </div>
 
-    <p class="version"><a href="https://jcapps.dev" target="_blank" rel="noopener">jcapps.dev</a></p>
+    <p class="version"><a href="https://jcapps.dev" target="_blank" rel="noopener">jcapps.dev</a> &middot; Updater <?= UPDATER_VERSION ?></p>
 </div>
 
 <?php if ($success): ?>
