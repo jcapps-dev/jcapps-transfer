@@ -15,9 +15,13 @@ if (is_file($_config)) {
 $errors  = [];
 $success = false;
 
-// Standardwerte
-$doc_root     = rtrim($_SERVER['DOCUMENT_ROOT'] ?? __DIR__, '/');
-$default_path = dirname($doc_root) . '/transfers';
+// Standardwerte — außerhalb Webroot bevorzugt, Fallback innerhalb App-Root
+$doc_root      = rtrim($_SERVER['DOCUMENT_ROOT'] ?? __DIR__, '/');
+$app_root      = dirname(__DIR__);
+$outside_path  = dirname($doc_root) . '/transfers';
+$inside_path   = $app_root . '/transfers';
+$default_path  = is_writable(dirname($doc_root)) ? $outside_path : $inside_path;
+$inside_warning = ($default_path === $inside_path);
 $default_url  = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http')
               . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 
@@ -202,7 +206,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="base_path">Upload-Verzeichnis (absoluter Pfad)</label>
                 <input type="text" id="base_path" name="base_path" maxlength="500"
                        value="<?= htmlspecialchars($_POST['base_path'] ?? $default_path, ENT_QUOTES, 'UTF-8') ?>">
+                <?php if ($inside_warning): ?>
+                <div class="hint" style="color:#92400e;">
+                    💡 Dein Hoster erlaubt keinen Schreibzugriff außerhalb des Webroots — der Pfad liegt daher innerhalb der App. Der Zugriff ist per <code>.htaccess</code> gesperrt, trotzdem empfiehlt sich ein Hoster mit mehr Verzeichniszugriff für Produktiv-Betrieb.
+                </div>
+                <?php else: ?>
                 <div class="hint">Wo Dateien gespeichert werden. Idealerweise <strong>außerhalb</strong> des öffentlichen Webverzeichnisses. Das Verzeichnis wird automatisch angelegt.</div>
+                <?php endif; ?>
             </div>
 
             <button type="submit" class="btn">
