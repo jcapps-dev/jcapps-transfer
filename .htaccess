@@ -1,0 +1,24 @@
+Options -Indexes
+
+# Sensible Verzeichnisse und Dateien direkt sperren
+RewriteEngine On
+
+# HTTP → HTTPS Redirect
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# functions/ sperren
+RewriteRule ^functions(/|$) - [F,L]
+
+# cleanup.php sperren (nur CLI)
+RewriteRule ^cleanup\.php$ - [F,L]
+
+# Config-Dateien sperren
+RewriteRule ^config(\.example)?\.php$ - [F,L]
+
+# README, CHANGELOG, composer sperren
+RewriteRule \.(md|json|sh|lock)$ - [F,L]
+
+# Alle übrigen Anfragen nach public/ umleiten (nur wenn nicht bereits dort)
+RewriteCond %{REQUEST_URI} !/public/
+RewriteRule ^(.*)$ public/$1 [L,QSA]

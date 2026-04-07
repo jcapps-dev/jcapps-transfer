@@ -1,0 +1,11 @@
+{
+    "name": "seidl/filetransfer",
+    "description": "Sicheres Datei-Transfer-Tool (Vorbereitung PHPMailer)",
+    "require": {},
+    "suggest": {
+        "phpmailer/phpmailer": "Für E-Mail-Versand von Download-Links"
+    },
+    "config": {
+        "vendor-dir": "vendor"
+    }
+}
