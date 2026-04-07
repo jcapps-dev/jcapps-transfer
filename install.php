@@ -92,37 +92,53 @@ function _extract(string $zip_path, string $dest): bool {
     $zip = new ZipArchive();
     if ($zip->open($zip_path) !== true) return false;
 
-    // GitHub-Archive haben ein Top-Level-Verzeichnis (z.B. jcapps-dev-jcapps-transfer-abc123/)
-    $top    = $zip->getNameIndex(0);
-    $prefix = strstr($top, '/', false) !== false ? substr($top, 0, strpos($top, '/') + 1) : '';
+    // Alles in temporäres Verzeichnis entpacken
+    $tmp_dir = sys_get_temp_dir() . '/jcapps_install_' . time();
+    @mkdir($tmp_dir, 0755, true);
 
-    for ($i = 0; $i < $zip->numFiles; $i++) {
-        $name     = $zip->getNameIndex($i);
-        $relative = $prefix ? substr($name, strlen($prefix)) : $name;
-        if (!$relative) continue;
-        if ($relative === 'install.php') continue; // sich selbst nicht überschreiben
-
-        $target = rtrim($dest, '/') . '/' . $relative;
-        if (str_ends_with($name, '/')) {
-            @mkdir($target, 0755, true);
-        } else {
-            @mkdir(dirname($target), 0755, true);
-            $zip->extractTo(dirname($target), $name);
-            // Datei aus Top-Level-Verzeichnis an richtigen Ort verschieben
-            $extracted = dirname($target) . '/' . $name;
-            if (is_file($extracted)) {
-                rename($extracted, $target);
-            }
-        }
+    if (!$zip->extractTo($tmp_dir)) {
+        $zip->close();
+        _rmdir_recursive($tmp_dir);
+        return false;
     }
     $zip->close();
 
-    // Leere Verzeichnisstruktur des Top-Level-Ordners aufräumen
-    if ($prefix) {
-        @rmdir($dest . '/' . rtrim($prefix, '/'));
-    }
+    // GitHub-Archive haben ein Top-Level-Verzeichnis — eine Ebene überspringen
+    $items = array_values(array_diff(scandir($tmp_dir), ['.', '..']));
+    $source = (count($items) === 1 && is_dir($tmp_dir . '/' . $items[0]))
+        ? $tmp_dir . '/' . $items[0]
+        : $tmp_dir;
+
+    // Dateien ans Ziel kopieren (install.php nicht überschreiben)
+    _copy_dir($source, rtrim($dest, '/'), ['install.php']);
+    _rmdir_recursive($tmp_dir);
 
     return true;
+}
+
+function _copy_dir(string $src, string $dest, array $skip = []): void {
+    foreach (scandir($src) as $item) {
+        if ($item === '.' || $item === '..') continue;
+        if (in_array($item, $skip, true)) continue;
+        $s = $src  . '/' . $item;
+        $d = $dest . '/' . $item;
+        if (is_dir($s)) {
+            @mkdir($d, 0755, true);
+            _copy_dir($s, $d);
+        } else {
+            @copy($s, $d);
+        }
+    }
+}
+
+function _rmdir_recursive(string $dir): void {
+    if (!is_dir($dir)) return;
+    foreach (scandir($dir) as $f) {
+        if ($f === '.' || $f === '..') continue;
+        $p = $dir . '/' . $f;
+        is_dir($p) ? _rmdir_recursive($p) : @unlink($p);
+    }
+    @rmdir($dir);
 }
 ?>
 <!DOCTYPE html>
