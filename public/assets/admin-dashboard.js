@@ -55,4 +55,45 @@ document.addEventListener('DOMContentLoaded', function() {
         var confirmBtn = e.target.closest('[data-confirm]');
         if (confirmBtn) { inlineConfirm(confirmBtn); }
     });
+
+    var updateBtn = document.getElementById('do-update-btn');
+    if (updateBtn) {
+        updateBtn.addEventListener('click', function() {
+            if (!confirm('App jetzt aktualisieren? Die Seite wird danach neu geladen.')) return;
+
+            var status = document.getElementById('update-status');
+            updateBtn.disabled = true;
+            updateBtn.textContent = 'Wird aktualisiert…';
+            status.style.display = 'none';
+
+            var csrf = document.querySelector('meta[name="csrf-token"]');
+
+            fetch('do_update.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'csrf_token=' + encodeURIComponent(csrf ? csrf.content : '')
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    status.style.display = 'inline';
+                    status.textContent = '✓ Aktualisiert auf v' + data.version + ' — Seite wird neu geladen…';
+                    setTimeout(function() { location.reload(); }, 2000);
+                } else {
+                    updateBtn.disabled = false;
+                    updateBtn.textContent = 'Jetzt aktualisieren';
+                    status.style.display = 'inline';
+                    status.style.color = '#991b1b';
+                    status.textContent = '✗ ' + (data.error || 'Unbekannter Fehler');
+                }
+            })
+            .catch(function() {
+                updateBtn.disabled = false;
+                updateBtn.textContent = 'Jetzt aktualisieren';
+                status.style.display = 'inline';
+                status.style.color = '#991b1b';
+                status.textContent = '✗ Netzwerkfehler — bitte erneut versuchen';
+            });
+        });
+    }
 });

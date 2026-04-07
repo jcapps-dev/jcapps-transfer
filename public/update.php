@@ -10,7 +10,7 @@
  *   2. Im Browser aufrufen und Admin-Passwort eingeben
  */
 
-define('UPDATER_VERSION', '1.0.5');
+define('UPDATER_VERSION', '1.0.6');
 define('GITHUB_REPO', 'jcapps-dev/jcapps-transfer');
 define('GITHUB_API',  'https://api.github.com/repos/' . GITHUB_REPO . '/releases/latest');
 
@@ -56,12 +56,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!$latest) {
         $error = 'GitHub konnte nicht erreicht werden.';
     } else {
-        // Schreibtest: kann PHP Dateien im App-Root überschreiben?
-        $write_test = $app_root . '/_write_test_' . time() . '.tmp';
-        if (!@file_put_contents($write_test, 'test')) {
-            $error = 'Keine Schreibrechte im App-Verzeichnis. Bitte manuell per FTP aktualisieren.';
+        // Schreibtest: kann PHP bestehende PHP-Dateien überschreiben?
+        $php_test_file = $app_root . '/public/admin/version.php';
+        $php_test_content = @file_get_contents($php_test_file);
+        $can_overwrite_php = ($php_test_content !== false && @file_put_contents($php_test_file, $php_test_content) !== false);
+        if (!$can_overwrite_php) {
+            $error = 'PHP-Dateien können nicht überschrieben werden. Bitte das Update manuell per FTP durchführen.';
         } else {
-            @unlink($write_test);
 
             $zip_url = $latest['zipball_url'];
             $tmp     = $app_root . '/_update_download_' . time() . '.zip';

@@ -66,6 +66,7 @@ if (is_file($_cache_file)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Dashboard – <?= htmlspecialchars($settings['site_name'], ENT_QUOTES, 'UTF-8') ?></title>
+    <meta name="csrf-token" content="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
     <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
@@ -120,10 +121,13 @@ if (is_file($_cache_file)) {
             <div class="container">
 
                 <?php if ($update_available): ?>
-                <div class="msg msg-info">
+                <div class="msg msg-info" id="update-banner">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
                     Version <strong><?= htmlspecialchars($update_version, ENT_QUOTES, 'UTF-8') ?></strong> verfügbar —
-                    <a href="https://github.com/jcapps-dev/jcapps-transfer/releases/latest" target="_blank" rel="noopener" style="color:inherit;font-weight:600;">update.php herunterladen</a> und im App-Verzeichnis hochladen.
+                    <button type="button" id="do-update-btn" class="btn btn-sm" style="margin-left:10px;padding:.25rem .75rem;font-size:.8125rem;">
+                        Jetzt aktualisieren
+                    </button>
+                    <span id="update-status" style="margin-left:8px;font-size:.875rem;display:none;"></span>
                 </div>
                 <?php endif; ?>
                 <?php foreach ($flash as $m): ?>
