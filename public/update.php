@@ -92,35 +92,57 @@ function _update_download(string $url, string $dest): bool {
 }
 
 function _update_extract(string $zip_path, string $app_root): bool {
-    // Dateien die beim Update NICHT überschrieben werden
     $protected = ['config.php', 'install.php'];
 
     $zip = new ZipArchive();
     if ($zip->open($zip_path) !== true) return false;
 
-    $top    = $zip->getNameIndex(0);
-    $prefix = strpos($top, '/') !== false ? substr($top, 0, strpos($top, '/') + 1) : '';
+    // Temp-Verzeichnis im App-Root (dort hat PHP garantiert Schreibrechte)
+    $tmp_dir = rtrim($app_root, '/') . '/_update_tmp_' . time();
+    @mkdir($tmp_dir, 0755, true);
 
-    for ($i = 0; $i < $zip->numFiles; $i++) {
-        $name     = $zip->getNameIndex($i);
-        $relative = $prefix ? substr($name, strlen($prefix)) : $name;
-        if (!$relative || str_ends_with($name, '/')) continue;
-        if (in_array($relative, $protected, true)) continue;
-
-        $target = rtrim($app_root, '/') . '/' . $relative;
-        @mkdir(dirname($target), 0755, true);
-
-        // Temporär extrahieren dann verschieben
-        $tmp_dir = sys_get_temp_dir() . '/jcapps_update_' . getmypid();
-        @mkdir($tmp_dir, 0755, true);
-        $zip->extractTo($tmp_dir, $name);
-        $extracted = $tmp_dir . '/' . $name;
-        if (is_file($extracted)) {
-            rename($extracted, $target);
-        }
+    if (!$zip->extractTo($tmp_dir)) {
+        $zip->close();
+        _update_rmdir($tmp_dir);
+        return false;
     }
     $zip->close();
+
+    // GitHub-Archive haben ein Top-Level-Verzeichnis — eine Ebene überspringen
+    $items = array_values(array_diff(scandir($tmp_dir), ['.', '..']));
+    $source = (count($items) === 1 && is_dir($tmp_dir . '/' . $items[0]))
+        ? $tmp_dir . '/' . $items[0]
+        : $tmp_dir;
+
+    _update_copy($source, rtrim($app_root, '/'), $protected);
+    _update_rmdir($tmp_dir);
+
     return true;
+}
+
+function _update_copy(string $src, string $dest, array $skip = []): void {
+    foreach (scandir($src) as $item) {
+        if ($item === '.' || $item === '..') continue;
+        if (in_array($item, $skip, true)) continue;
+        $s = $src  . '/' . $item;
+        $d = $dest . '/' . $item;
+        if (is_dir($s)) {
+            @mkdir($d, 0755, true);
+            _update_copy($s, $d);
+        } else {
+            @copy($s, $d);
+        }
+    }
+}
+
+function _update_rmdir(string $dir): void {
+    if (!is_dir($dir)) return;
+    foreach (scandir($dir) as $f) {
+        if ($f === '.' || $f === '..') continue;
+        $p = $dir . '/' . $f;
+        is_dir($p) ? _update_rmdir($p) : @unlink($p);
+    }
+    @rmdir($dir);
 }
 ?>
 <!DOCTYPE html>

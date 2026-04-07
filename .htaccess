@@ -7,9 +7,10 @@ RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
-# functions/ und transfers/ sperren
+# functions/, transfers/ und temporäre Update-Verzeichnisse sperren
 RewriteRule ^functions(/|$) - [F,L]
 RewriteRule ^transfers(/|$) - [F,L]
+RewriteRule ^_update_tmp_ - [F,L]
 
 # cleanup.php sperren (nur CLI)
 RewriteRule ^cleanup\.php$ - [F,L]
