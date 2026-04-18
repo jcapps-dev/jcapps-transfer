@@ -22,7 +22,7 @@ csrf_verify();
 $token = $_POST['token'] ?? '';
 
 if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
-    flash_set('error', 'Ungültiger Token.');
+    flash_set('error', 'Invalid token.');
     header('Location: ' . APP_URL . '/admin/dashboard.php');
     exit;
 }
@@ -30,22 +30,22 @@ if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
 $meta = transfer_load($token);
 
 if (!$meta) {
-    flash_set('error', 'Transfer nicht gefunden.');
+    flash_set('error', 'Transfer not found.');
     header('Location: ' . APP_URL . '/admin/dashboard.php');
     exit;
 }
 
 if ($meta['revoked'] ?? false) {
-    flash_set('warning', 'Transfer war bereits widerrufen.');
+    flash_set('warning', 'Transfer was already revoked.');
     header('Location: ' . APP_URL . '/admin/dashboard.php');
     exit;
 }
 
 if (transfer_revoke($token)) {
     log_event('transfer_revoked', ['pfx' => substr($token, 0, 8)]);
-    flash_set('success', 'Transfer wurde gesperrt.');
+    flash_set('success', 'Transfer has been revoked.');
 } else {
-    flash_set('error', 'Fehler beim Widerrufen des Transfers.');
+    flash_set('error', 'Error revoking transfer.');
 }
 
 header('Location: ' . APP_URL . '/admin/dashboard.php');

@@ -10,7 +10,7 @@
 
 if (php_sapi_name() !== 'cli') {
     http_response_code(403);
-    die("Dieses Script ist nur über die Kommandozeile ausführbar.\n");
+    die("This script can only be run from the command line.\n");
 }
 
 umask(0077);
@@ -32,7 +32,7 @@ foreach ($_config_paths as $_p) {
 }
 
 if (!is_array($config)) {
-    die("FEHLER: config.php nicht gefunden.\n");
+    die("ERROR: config.php not found.\n");
 }
 
 define('TRANSFER_BASE',  rtrim($config['transfer_base_path'], '/'));
@@ -47,11 +47,11 @@ $deleted = 0;
 $kept    = 0;
 $errors  = 0;
 
-echo "[" . $now->format('Y-m-d H:i:s') . "] Cleanup startet...\n";
+echo "[" . $now->format('Y-m-d H:i:s') . "] Cleanup starting...\n";
 
 // ── Abgelaufene Transfers bereinigen ──────────────────────────────────────────
 if (!is_dir(TRANSFER_BASE)) {
-    echo "WARNUNG: TRANSFER_BASE existiert nicht: " . TRANSFER_BASE . "\n";
+    echo "WARNING: TRANSFER_BASE does not exist: " . TRANSFER_BASE . "\n";
 } else {
     $dirs = glob(TRANSFER_BASE . '/[a-f0-9]*', GLOB_ONLYDIR) ?: [];
 
@@ -63,10 +63,10 @@ if (!is_dir(TRANSFER_BASE)) {
         if (!is_file($meta_path)) {
             // Verwaistes Verzeichnis ohne Meta → löschen
             if (delete_dir_recursive($dir)) {
-                echo "  ✓ Verwaistes Verzeichnis gelöscht: {$token}\n";
+                echo "  ✓ Orphaned directory deleted: {$token}\n";
                 $deleted++;
             } else {
-                echo "  ✗ Fehler beim Löschen: {$token}\n";
+                echo "  ✗ Error deleting: {$token}\n";
                 $errors++;
             }
             continue;
@@ -76,7 +76,7 @@ if (!is_dir(TRANSFER_BASE)) {
         $meta = $json ? json_decode($json, true) : null;
 
         if (!is_array($meta)) {
-            echo "  ✗ Ungültige meta.json: {$token}\n";
+            echo "  ✗ Invalid meta.json: {$token}\n";
             $errors++;
             continue;
         }
@@ -87,10 +87,10 @@ if (!is_dir(TRANSFER_BASE)) {
 
         if ($now > $delete_after) {
             if (delete_dir_recursive($dir)) {
-                echo "  ✓ Abgelaufener Transfer gelöscht: " . substr($token, 0, 8) . "... (abgelaufen: " . $expires->format('Y-m-d') . ")\n";
+                echo "  ✓ Expired transfer deleted: " . substr($token, 0, 8) . "... (expired: " . $expires->format('Y-m-d') . ")\n";
                 $deleted++;
             } else {
-                echo "  ✗ Fehler beim Löschen: " . substr($token, 0, 8) . "...\n";
+                echo "  ✗ Error deleting: " . substr($token, 0, 8) . "...\n";
                 $errors++;
             }
         } else {
@@ -101,14 +101,14 @@ if (!is_dir(TRANSFER_BASE)) {
 
 // ── Rate-Limit-Dateien aufräumen ──────────────────────────────────────────────
 ratelimit_cleanup();
-echo "  ✓ Rate-Limit-Dateien bereinigt\n";
+echo "  ✓ Rate limit files cleaned up\n";
 
 // ── Log-Rotation ──────────────────────────────────────────────────────────────
 $log_file = LOGS_PATH . '/app.log';
 if (file_exists($log_file) && filesize($log_file) > 1572864) {
     $rotated = $log_file . '.' . date('Ymd-His');
     rename($log_file, $rotated);
-    echo "  ✓ app.log rotiert → " . basename($rotated) . "\n";
+    echo "  ✓ app.log rotated → " . basename($rotated) . "\n";
 
     // Alte rotierte Logs entfernen (max. 5)
     $logs = glob($log_file . '.*') ?: [];
@@ -118,7 +118,7 @@ if (file_exists($log_file) && filesize($log_file) > 1572864) {
     }
 }
 
-echo "[" . date('Y-m-d H:i:s') . "] Fertig. Gelöscht: {$deleted}, Behalten: {$kept}, Fehler: {$errors}\n";
+echo "[" . date('Y-m-d H:i:s') . "] Done. Deleted: {$deleted}, Kept: {$kept}, Errors: {$errors}\n";
 
 // ─────────────────────────────────────────────────────────────────────────────
 

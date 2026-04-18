@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.0] — 2026-04-18
+
+### Localization
+
+- All UI text translated to English (download page, admin backend, setup/update/install wizards, error messages)
+- `lang="de"` → `lang="en"` in all HTML pages
+- Date format changed from `d.m.Y` to `Y-m-d` (ISO 8601)
+- "Impressum" link renamed to "Legal notice"
+- Default `company_name` fallback changed to "Secure File Transfer"
+
 ## [1.0.0] — 2026-04-07
 
 ### Erste öffentliche Version

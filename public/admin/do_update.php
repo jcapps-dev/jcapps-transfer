@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 auth_session_start();
 if (empty($_SESSION['admin_logged_in'])) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Nicht eingeloggt']);
+    echo json_encode(['success' => false, 'error' => 'Not logged in']);
     exit;
 }
 csrf_verify();
@@ -35,7 +35,7 @@ $ctx  = stream_context_create(['http' => [
 ]]);
 $json = @file_get_contents('https://api.github.com/repos/jcapps-dev/jcapps-transfer/releases/latest', false, $ctx);
 if (!$json) {
-    echo json_encode(['success' => false, 'error' => 'GitHub konnte nicht erreicht werden.']);
+    echo json_encode(['success' => false, 'error' => 'Could not reach GitHub.']);
     exit;
 }
 
@@ -44,19 +44,19 @@ $zip_url = $release['zipball_url'] ?? null;
 $latest  = ltrim($release['tag_name'] ?? '', 'v');
 
 if (!$zip_url) {
-    echo json_encode(['success' => false, 'error' => 'Kein Release gefunden.']);
+    echo json_encode(['success' => false, 'error' => 'No release found.']);
     exit;
 }
 
 if (!version_compare($latest, APP_VERSION, '>')) {
-    echo json_encode(['success' => false, 'error' => 'Bereits aktuell (' . APP_VERSION . ').']);
+    echo json_encode(['success' => false, 'error' => 'Already up to date (' . APP_VERSION . ').']);
     exit;
 }
 
 // ZIP herunterladen
 $tmp = sys_get_temp_dir() . '/jcapps-transfer-update-' . time() . '.zip';
 if (!_do_download($zip_url, $tmp)) {
-    echo json_encode(['success' => false, 'error' => 'Download fehlgeschlagen.']);
+    echo json_encode(['success' => false, 'error' => 'Download failed.']);
     exit;
 }
 
@@ -66,7 +66,7 @@ $protected = ['config.php'];
 
 if (!_do_extract($tmp, $app_root, $protected)) {
     @unlink($tmp);
-    echo json_encode(['success' => false, 'error' => 'Entpacken fehlgeschlagen. Schreibrechte prüfen.']);
+    echo json_encode(['success' => false, 'error' => 'Extraction failed. Check write permissions.']);
     exit;
 }
 

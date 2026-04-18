@@ -27,23 +27,23 @@ $reqs = [
     'PHP 8.0+'    => version_compare(PHP_VERSION, '8.0.0', '>='),
     'ZipArchive'  => class_exists('ZipArchive'),
     'Download'    => function_exists('curl_init') || (bool) ini_get('allow_url_fopen'),
-    'Schreibrecht' => is_writable(__DIR__),
+    'Write access' => is_writable(__DIR__),
 ];
 $all_ok = !in_array(false, $reqs, true);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $all_ok) {
     $release = _fetch_latest_release();
     if (!$release) {
-        $error = 'GitHub konnte nicht erreicht werden. Bitte Internetverbindung prüfen und erneut versuchen.';
+        $error = 'Could not reach GitHub. Please check your internet connection and try again.';
     } else {
         $zip_url = $release['zipball_url'];
         $tmp     = sys_get_temp_dir() . '/jcapps-transfer-' . time() . '.zip';
 
         if (!_download($zip_url, $tmp)) {
-            $error = 'Download fehlgeschlagen. Bitte erneut versuchen.';
+            $error = 'Download failed. Please try again.';
         } else {
             if (!_extract($tmp, __DIR__)) {
-                $error = 'Entpacken fehlgeschlagen. Bitte Schreibrechte im Verzeichnis prüfen.';
+                $error = 'Extraction failed. Please check write permissions in the directory.';
             } else {
                 @unlink($tmp);
                 // install.php nach dem Redirect löschen
@@ -142,11 +142,11 @@ function _rmdir_recursive(string $dir): void {
 }
 ?>
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>jcapps-transfer installieren</title>
+    <title>jcapps-transfer Install</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f3f4f6; margin: 0; padding: 2rem 1rem; color: #111827; }
@@ -177,7 +177,7 @@ function _rmdir_recursive(string $dir): void {
 
     <div class="card">
         <h1>Installation</h1>
-        <p class="sub">Die aktuelle Version wird von GitHub heruntergeladen und entpackt. Danach startet der Setup-Assistent.</p>
+        <p class="sub">The latest version will be downloaded from GitHub and extracted. The setup wizard will start afterwards.</p>
 
         <?php if ($error): ?>
         <div class="error"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
@@ -192,7 +192,7 @@ function _rmdir_recursive(string $dir): void {
                 <svg class="fail" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 <?php endif; ?>
                 <span><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></span>
-                <?php if (!$ok): ?><span class="fail" style="font-size:.8rem;">— nicht erfüllt</span><?php endif; ?>
+                <?php if (!$ok): ?><span class="fail" style="font-size:.8rem;">— not met</span><?php endif; ?>
             </li>
         <?php endforeach; ?>
         </ul>
@@ -201,11 +201,11 @@ function _rmdir_recursive(string $dir): void {
         <form method="POST">
             <button type="submit" class="btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.36"/></svg>
-                Jetzt installieren
+                Install now
             </button>
         </form>
         <?php else: ?>
-        <p style="color:#dc2626;font-size:.875rem;">Bitte die fehlenden Voraussetzungen erfüllen und die Seite neu laden.</p>
+        <p style="color:#dc2626;font-size:.875rem;">Please fulfill the missing requirements and reload the page.</p>
         <?php endif; ?>
     </div>
 

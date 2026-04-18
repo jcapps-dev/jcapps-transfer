@@ -1,33 +1,33 @@
 <?php
 /**
- * Konfigurationsvorlage — NICHT mit echten Daten committen!
- * Kopieren als /home/www/filetransfer_config.php (Server)
- * oder als filetransfer/config.php (lokale Entwicklung, in .gitignore)
+ * Configuration template — do NOT commit with real values!
+ * Copy as /home/www/filetransfer_config.php (server)
+ * or as filetransfer/config.php (local development, in .gitignore)
  *
- * Bcrypt-Hash erzeugen:
- *   php -r "echo password_hash('MeinPasswort', PASSWORD_BCRYPT, ['cost'=>12]);"
+ * Generate a bcrypt hash:
+ *   php -r "echo password_hash('MyPassword', PASSWORD_BCRYPT, ['cost'=>12]);"
  */
 return [
-    // Verzeichnis für Uploads — AUSSERHALB des Webroots!
+    // Directory for uploads — OUTSIDE the web root!
     'transfer_base_path'     => '/home/www/transfers',
 
-    // Bcrypt-Hash des Admin-Passworts (cost 12)
+    // Bcrypt hash of the admin password (cost 12)
     'admin_password_hash'    => '$2y$12$REPLACE_WITH_ACTUAL_BCRYPT_HASH_HERE_xxxxxxxxxxxxx',
 
-    // Upload-Limits
+    // Upload limits
     'max_filesize_mb'        => 1024,
     'max_files_per_upload'   => 10,
 
-    // Ablaufzeit für Transfer-Links (in Tagen)
+    // Expiry time for transfer links (in days)
     'transfer_lifetime_days' => 14,
 
-    // Salt für IP-Hashing im Rate-Limit und Logging (DSGVO: kein Klartext-IP)
-    // Mindestens 32 zufällige Zeichen — einmalig generieren und nie ändern!
-    'rate_limit_salt'        => 'ZUFAELLIG-ERSETZEN-MINDESTENS-32-ZEICHEN-HIER',
+    // Salt for IP hashing in rate limiting and logging (GDPR: no plain-text IP)
+    // At least 32 random characters — generate once and never change!
+    'rate_limit_salt'        => 'RANDOM-REPLACE-AT-LEAST-32-CHARS-HERE',
 
-    // Öffentliche URL des Tools (kein trailing slash)
+    // Public URL of the tool (no trailing slash)
     'app_url'                => 'https://transfer.example.com',
 
-    // Session-Name (eindeutig halten wenn mehrere Apps auf gleichem Server)
+    // Session name (keep unique if multiple apps run on the same server)
     'session_name'           => 'JCAPPS_FILETRANSFER',
 ];

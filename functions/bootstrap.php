@@ -26,7 +26,7 @@ foreach ($_config_paths as $_p) {
 
 if (!is_array($config)) {
     http_response_code(503);
-    die('Konfigurationsfehler: config.php nicht gefunden. Bitte config.example.php kopieren und anpassen.');
+    die('Configuration error: config.php not found. Please copy config.example.php and adjust.');
 }
 
 // Fehler-Log in Transfer-Verzeichnis (außerhalb Webroot)

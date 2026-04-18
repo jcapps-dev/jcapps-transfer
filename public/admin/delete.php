@@ -22,22 +22,22 @@ csrf_verify();
 $token = $_POST['token'] ?? '';
 
 if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
-    flash_set('error', 'Ungültiger Token.');
+    flash_set('error', 'Invalid token.');
     header('Location: ' . APP_URL . '/admin/dashboard.php');
     exit;
 }
 
 if (!transfer_load($token)) {
-    flash_set('error', 'Transfer nicht gefunden.');
+    flash_set('error', 'Transfer not found.');
     header('Location: ' . APP_URL . '/admin/dashboard.php');
     exit;
 }
 
 if (transfer_delete($token)) {
     log_event('transfer_deleted', ['pfx' => substr($token, 0, 8)]);
-    flash_set('success', 'Transfer und alle Dateien wurden gelöscht.');
+    flash_set('success', 'Transfer and all files have been deleted.');
 } else {
-    flash_set('error', 'Fehler beim Löschen des Transfers.');
+    flash_set('error', 'Error deleting transfer.');
 }
 
 header('Location: ' . APP_URL . '/admin/dashboard.php');

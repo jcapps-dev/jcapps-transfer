@@ -32,9 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $settings['logo_mime'] = null;
         if (settings_save($settings)) {
             log_event('settings_logo_deleted');
-            $success = 'Logo gelöscht.';
+            $success = 'Logo deleted.';
         } else {
-            $error = 'Fehler beim Speichern der Einstellungen.';
+            $error = 'Error saving settings.';
         }
 
     } else {
@@ -55,17 +55,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $max_bytes = 2 * 1048576; // 2 MB
 
             if ($upload['size'] > $max_bytes) {
-                $error = 'Logo zu groß (max. 2 MB).';
+                $error = 'Logo too large (max. 2 MB).';
             } else {
                 $finfo = new finfo(FILEINFO_MIME_TYPE);
                 $mime  = $finfo->file($upload['tmp_name']);
 
                 if (!in_array($mime, $allowed_mimes, true)) {
-                    $error = 'Dateityp nicht erlaubt. Erlaubt: PNG, JPG, GIF, WebP.';
+                    $error = 'File type not allowed. Allowed: PNG, JPG, GIF, WebP.';
                 } else {
                     $logo_path = TRANSFER_BASE . '/logo.dat';
                     if (!move_uploaded_file($upload['tmp_name'], $logo_path)) {
-                        $error = 'Logo konnte nicht gespeichert werden.';
+                        $error = 'Logo could not be saved.';
                     } else {
                         chmod($logo_path, 0600);
                         $settings['has_logo']  = true;
@@ -75,16 +75,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
         } elseif ($upload && $upload['error'] !== UPLOAD_ERR_NO_FILE) {
-            $error = 'Upload-Fehler (Code: ' . $upload['error'] . ').';
+            $error = 'Upload error (Code: ' . $upload['error'] . ').';
         }
 
         if (!$error) {
             if (settings_save($settings)) {
                 log_event('settings_saved');
-                $success  = 'Einstellungen gespeichert.';
+                $success  = 'Settings saved.';
                 $settings = settings_load();
             } else {
-                $error = 'Fehler beim Speichern.';
+                $error = 'Error saving.';
             }
         }
     }
@@ -93,11 +93,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE . '/logo.dat') : 0;
 ?>
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Einstellungen – Filetransfer Admin</title>
+    <title>Settings – Filetransfer Admin</title>
     <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
@@ -113,21 +113,21 @@ $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE .
         <nav class="sidebar-nav">
             <a class="sidebar-link" href="dashboard.php">
                 <span class="link-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
-                <span class="link-text">Übersicht</span>
+                <span class="link-text">Overview</span>
             </a>
             <a class="sidebar-link" href="upload.php">
                 <span class="link-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></span>
-                <span class="link-text">Neuer Transfer</span>
+                <span class="link-text">New Transfer</span>
             </a>
         </nav>
         <div class="sidebar-footer">
             <a class="sidebar-link" href="logout.php">
                 <span class="link-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
-                <span class="link-text">Ausloggen</span>
+                <span class="link-text">Log out</span>
             </a>
             <a class="sidebar-link active" href="settings.php">
                 <span class="link-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-                <span class="link-text">Einstellungen</span>
+                <span class="link-text">Settings</span>
             </a>
         </div>
     </aside>
@@ -138,7 +138,7 @@ $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE .
                 <div class="breadcrumbs">
                     <span>Admin</span>
                     <span class="breadcrumb-sep">›</span>
-                    <span class="breadcrumb-item">Einstellungen</span>
+                    <span class="breadcrumb-item">Settings</span>
                 </div>
             </div>
         </header>
@@ -155,7 +155,7 @@ $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE .
 
                 <div class="card">
                     <div class="card-header">
-                        <h2 style="margin:0;">Branding &amp; Download-Seite</h2>
+                        <h2 style="margin:0;">Branding &amp; Download page</h2>
                     </div>
 
                     <form method="POST" action="" enctype="multipart/form-data">
@@ -163,60 +163,60 @@ $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE .
                         <input type="hidden" name="action" value="save">
 
                         <div class="form-group">
-                            <label for="site_name">Seitenname (Sidebar)</label>
+                            <label for="site_name">App name (Sidebar)</label>
                             <input type="text" id="site_name" name="site_name"
                                    class="form-control" maxlength="60"
                                    value="<?= htmlspecialchars($settings['site_name'], ENT_QUOTES, 'UTF-8') ?>">
-                            <div class="form-hint">Wird in der Sidebar oben links angezeigt.</div>
+                            <div class="form-hint">Shown in the top-left of the sidebar.</div>
                         </div>
 
                         <div class="form-group">
-                            <label for="company_name">Firmenname</label>
+                            <label for="company_name">Company name</label>
                             <input type="text" id="company_name" name="company_name"
                                    class="form-control" maxlength="100"
                                    value="<?= htmlspecialchars($settings['company_name'], ENT_QUOTES, 'UTF-8') ?>">
-                            <div class="form-hint">Wird auf der Download-Seite als Überschrift angezeigt.</div>
+                            <div class="form-hint">Shown as the heading on the download page.</div>
                         </div>
 
                         <div class="form-group">
-                            <label for="footer_text">Footer-Text</label>
+                            <label for="footer_text">Footer text</label>
                             <input type="text" id="footer_text" name="footer_text"
                                    class="form-control" maxlength="300"
-                                   placeholder="z.B. Muster GmbH · Vertraulich"
+                                   placeholder="e.g. Acme Corp · Confidential"
                                    value="<?= htmlspecialchars($settings['footer_text'], ENT_QUOTES, 'UTF-8') ?>">
-                            <div class="form-hint">Erscheint in der Fußzeile der Download-Seite. Leer lassen = kein Footer.</div>
+                            <div class="form-hint">Appears in the footer of the download page. Leave empty = no footer.</div>
                         </div>
 
                         <div class="form-group">
-                            <label for="impressum_url">Impressum-URL</label>
+                            <label for="impressum_url">Legal notice URL</label>
                             <input type="url" class="form-control" id="impressum_url" name="impressum_url"
-                                   maxlength="500" placeholder="https://example.com/impressum"
+                                   maxlength="500" placeholder="https://example.com/legal"
                                    value="<?= htmlspecialchars($settings['impressum_url'], ENT_QUOTES, 'UTF-8') ?>">
-                            <div class="form-hint">Wird als kleiner Link im Footer der Login- und Download-Seite angezeigt. Leer lassen = kein Link.</div>
+                            <div class="form-hint">Shown as a small link in the footer of the login and download pages. Leave empty = no link.</div>
                         </div>
 
                         <div class="form-group">
-                            <label>Firmenlogo</label>
+                            <label>Company logo</label>
                             <?php if ($settings['has_logo']): ?>
                             <div style="display:inline-block; margin-bottom:14px; line-height:0;">
                                 <img src="../logo.php?v=<?= (int)$logo_version ?>"
-                                     alt="Aktuelles Logo"
+                                     alt="Current logo"
                                      width="240"
                                      style="height:auto; border:1px solid #E5E7EB; border-radius:4px; display:block;">
                             </div>
-                            <div class="form-hint" style="margin-bottom: var(--spacing-sm);">Neue Datei ersetzt das aktuelle Logo.</div>
+                            <div class="form-hint" style="margin-bottom: var(--spacing-sm);">New file replaces the current logo.</div>
                             <?php endif; ?>
                             <input type="file" name="logo" class="form-control"
                                    accept="image/png,image/jpeg,image/gif,image/webp"
                                    style="padding: 0.375rem;">
-                            <div class="form-hint">PNG, JPG, GIF oder WebP — max. 2 MB. Empfohlen: transparenter Hintergrund (PNG), min. 200 px Breite.</div>
+                            <div class="form-hint">PNG, JPG, GIF or WebP — max. 2 MB. Recommended: transparent background (PNG), min. 200 px wide.</div>
                         </div>
 
                         <div style="display:flex; gap:var(--spacing-sm); align-items:center;">
-                            <button type="submit" class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Speichern</button>
+                            <button type="submit" class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save</button>
                             <?php if ($settings['has_logo']): ?>
                             <button type="button" class="btn btn-danger"
-                                    data-open-modal="logo-delete-modal"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Logo löschen</button>
+                                    data-open-modal="logo-delete-modal"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete logo</button>
                             <?php endif; ?>
                         </div>
                     </form>
@@ -230,7 +230,7 @@ $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE .
 
                 <div class="card">
                     <div class="card-header">
-                        <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> System-Informationen</h3>
+                        <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> System information</h3>
                     </div>
 
                     <?php
@@ -252,23 +252,23 @@ $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE .
                                 <td><?= phpversion() ?></td>
                             </tr>
                             <tr>
-                                <td><strong>Einstellungen zuletzt gespeichert</strong></td>
-                                <td><?= isset($settings['updated']) ? date('d.m.Y H:i', strtotime($settings['updated'])) : '-' ?></td>
+                                <td><strong>Settings last saved</strong></td>
+                                <td><?= isset($settings['updated']) ? date('Y-m-d H:i', strtotime($settings['updated'])) : '-' ?></td>
                             </tr>
                             <tr>
-                                <td><strong>Transfers gesamt</strong></td>
+                                <td><strong>Total transfers</strong></td>
                                 <td><?= count($all_transfers) ?></td>
                             </tr>
                             <tr>
-                                <td><strong>Aktive Transfers</strong></td>
+                                <td><strong>Active transfers</strong></td>
                                 <td><?= $aktiv_count ?></td>
                             </tr>
                             <tr>
-                                <td><strong>Inaktiv / abgelaufen</strong></td>
+                                <td><strong>Inactive / expired</strong></td>
                                 <td><?= $inaktiv_count ?></td>
                             </tr>
                             <tr>
-                                <td><strong>Speicherplatz (Uploads)</strong></td>
+                                <td><strong>Storage used (uploads)</strong></td>
                                 <td><?= $upload_mb ?> MB</td>
                             </tr>
                         </table>
@@ -282,7 +282,7 @@ $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE .
         </main>
 
         <footer class="app-statusbar">
-            <div class="statusbar-left"><span>Einstellungen</span></div>
+            <div class="statusbar-left"><span>Settings</span></div>
             <div class="statusbar-right"><span>v<?= APP_VERSION ?></span></div>
         </footer>
     </div>
@@ -290,13 +290,13 @@ $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE .
 
 <div id="logo-delete-modal" class="modal-overlay">
     <div class="modal-box">
-        <div class="modal-header"><h3>Logo löschen?</h3></div>
-        <div class="modal-body">Das aktuelle Logo wird unwiderruflich gelöscht.</div>
+        <div class="modal-header"><h3>Delete logo?</h3></div>
+        <div class="modal-body">The current logo will be permanently deleted.</div>
         <div class="modal-footer">
             <button type="button" class="btn btn-ghost btn-sm"
-                    data-close-modal="logo-delete-modal">Abbrechen</button>
+                    data-close-modal="logo-delete-modal">Cancel</button>
             <button type="button" class="btn btn-danger"
-                    data-submit-form="logo-delete-form">Ja, löschen</button>
+                    data-submit-form="logo-delete-form">Yes, delete</button>
         </div>
     </div>
 </div>

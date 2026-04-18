@@ -61,7 +61,7 @@ if (is_file($_cache_file)) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -83,21 +83,21 @@ if (is_file($_cache_file)) {
         <nav class="sidebar-nav">
             <a class="sidebar-link active" href="dashboard.php">
                 <span class="link-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
-                <span class="link-text">Übersicht</span>
+                <span class="link-text">Overview</span>
             </a>
             <a class="sidebar-link" href="upload.php">
                 <span class="link-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></span>
-                <span class="link-text">Neuer Transfer</span>
+                <span class="link-text">New Transfer</span>
             </a>
         </nav>
         <div class="sidebar-footer">
-            <a class="sidebar-link" href="logout.php" title="Ausloggen">
+            <a class="sidebar-link" href="logout.php" title="Log out">
                 <span class="link-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
-                <span class="link-text">Ausloggen</span>
+                <span class="link-text">Log out</span>
             </a>
             <a class="sidebar-link" href="settings.php">
                 <span class="link-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-                <span class="link-text">Einstellungen</span>
+                <span class="link-text">Settings</span>
             </a>
         </div>
     </aside>
@@ -109,11 +109,11 @@ if (is_file($_cache_file)) {
                 <div class="breadcrumbs">
                     <span class="breadcrumb-item">Transfers</span>
                     <span class="breadcrumb-sep">›</span>
-                    <span>Übersicht</span>
+                    <span>Overview</span>
                 </div>
             </div>
             <div class="toolbar-right">
-                <a href="upload.php" class="toolbar-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Neuer Transfer</a>
+                <a href="upload.php" class="toolbar-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> New Transfer</a>
             </div>
         </header>
 
@@ -123,9 +123,9 @@ if (is_file($_cache_file)) {
                 <?php if ($update_available): ?>
                 <div class="msg msg-info" id="update-banner">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-                    Version <strong><?= htmlspecialchars($update_version, ENT_QUOTES, 'UTF-8') ?></strong> verfügbar —
+                    Version <strong><?= htmlspecialchars($update_version, ENT_QUOTES, 'UTF-8') ?></strong> available —
                     <button type="button" id="do-update-btn" class="btn btn-sm" style="margin-left:10px;padding:.25rem .75rem;font-size:.8125rem;">
-                        Jetzt aktualisieren
+                        Update now
                     </button>
                     <span id="update-status" style="margin-left:8px;font-size:.875rem;display:none;"></span>
                 </div>
@@ -140,39 +140,39 @@ if (is_file($_cache_file)) {
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-value"><?= $total ?></div>
-                        <div class="stat-label">Transfers gesamt</div>
+                        <div class="stat-label">Total transfers</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value"><?= $active ?></div>
-                        <div class="stat-label">Aktiv</div>
+                        <div class="stat-label">Active</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value"><?= $revoked ?></div>
-                        <div class="stat-label">Widerrufen</div>
+                        <div class="stat-label">Revoked</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value"><?= $expired ?></div>
-                        <div class="stat-label">Abgelaufen / Limit</div>
+                        <div class="stat-label">Expired / Limit</div>
                     </div>
                 </div>
 
                 <!-- Tabelle -->
                 <?php if (empty($transfers)): ?>
                 <div class="card" style="text-align:center; padding: 2rem; color: var(--color-gray-500);">
-                    Noch keine Transfers. <a href="upload.php" style="color:var(--color-navy);font-weight:600;">Ersten Transfer erstellen →</a>
+                    No transfers yet. <a href="upload.php" style="color:var(--color-navy);font-weight:600;">Create first transfer →</a>
                 </div>
                 <?php else: ?>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>Datei(en)</th>
-                                <th>Größe</th>
-                                <th>Erstellt</th>
-                                <th>Läuft ab</th>
+                                <th>File(s)</th>
+                                <th>Size</th>
+                                <th>Created</th>
+                                <th>Expires</th>
                                 <th>Downloads</th>
                                 <th>Status</th>
-                                <th>Aktionen</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -182,10 +182,10 @@ if (is_file($_cache_file)) {
                             $files     = $t['files'];
                             $filename  = count($files) === 1
                                 ? $files[0]['original_name']
-                                : count($files) . ' Dateien';
+                                : count($files) . ' files';
                             $size      = transfer_format_size(transfer_total_size($t));
-                            $created   = date('d.m.Y H:i', strtotime($t['created_at']));
-                            $expires   = date('d.m.Y', strtotime($t['expires_at']));
+                            $created   = date('Y-m-d H:i', strtotime($t['created_at']));
+                            $expires   = date('Y-m-d', strtotime($t['expires_at']));
                             $dl_count  = (int)($t['download_count'] ?? 0);
                             $dl_max    = $t['max_downloads'] ?? null;
                             $dl_text   = $dl_max !== null ? $dl_count . ' / ' . $dl_max : $dl_count . ' / ∞';
@@ -200,17 +200,17 @@ if (is_file($_cache_file)) {
                                 default        => 'badge-expired',
                             };
                             $badge_text = match($status) {
-                                'active'       => 'Aktiv',
-                                'revoked'      => 'Widerrufen',
-                                'expired'      => 'Abgelaufen',
-                                'maxdownloads' => 'Limit erreicht',
-                                default        => 'Unbekannt',
+                                'active'       => 'Active',
+                                'revoked'      => 'Revoked',
+                                'expired'      => 'Expired',
+                                'maxdownloads' => 'Limit reached',
+                                default        => 'Unknown',
                             };
                             ?>
                             <tr>
                                 <td>
                                     <?= htmlspecialchars($filename, ENT_QUOTES, 'UTF-8') ?>
-                                    <?php if ($has_pw): ?><span title="Passwortgeschützt" style="margin-left:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><?php endif; ?>
+                                    <?php if ($has_pw): ?><span title="Password protected" style="margin-left:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><?php endif; ?>
                                     <?php if (count($files) > 1): ?><span style="font-size:0.75rem;color:var(--color-gray-400);margin-left:4px;">(ZIP)</span><?php endif; ?>
                                 </td>
                                 <td style="font-family:'JetBrains Mono',monospace; font-size:0.8125rem;"><?= htmlspecialchars($size, ENT_QUOTES, 'UTF-8') ?></td>
@@ -222,20 +222,20 @@ if (is_file($_cache_file)) {
                                     <div class="td-actions">
                                         <?php if ($status === 'active'): ?>
                                         <button class="btn btn-sm btn-ghost copy-btn"
-                                                title="Link kopieren"
+                                                title="Copy link"
                                                 data-url="<?= htmlspecialchars($dl_url, ENT_QUOTES, 'UTF-8') ?>"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Link</button>
                                         <form method="POST" action="revoke.php" style="display:inline;">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="token" value="<?= htmlspecialchars($t['token'], ENT_QUOTES, 'UTF-8') ?>">
                                             <button type="submit" class="btn btn-sm btn-warning"
-                                                    data-confirm="Transfer sperren?"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> Sperren</button>
+                                                    data-confirm="Revoke transfer?"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> Revoke</button>
                                         </form>
                                         <?php endif; ?>
                                         <form method="POST" action="delete.php" style="display:inline;">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="token" value="<?= htmlspecialchars($t['token'], ENT_QUOTES, 'UTF-8') ?>">
                                             <button type="submit" class="btn btn-sm btn-danger"
-                                                    data-confirm="Unwiderruflich löschen?"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Löschen</button>
+                                                    data-confirm="Delete permanently?"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete</button>
                                         </form>
                                     </div>
                                 </td>

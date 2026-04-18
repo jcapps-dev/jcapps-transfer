@@ -33,16 +33,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $site_name  = trim($_POST['site_name'] ?? 'Filetransfer');
 
     if (strlen($password) < 8) {
-        $errors[] = 'Das Passwort muss mindestens 8 Zeichen lang sein.';
+        $errors[] = 'Password must be at least 8 characters.';
     }
     if ($password !== $password2) {
-        $errors[] = 'Die Passwörter stimmen nicht überein.';
+        $errors[] = 'Passwords do not match.';
     }
     if (!$base_path) {
-        $errors[] = 'Bitte einen Pfad für die Uploads angeben.';
+        $errors[] = 'Please enter a path for uploads.';
     }
     if (!$app_url) {
-        $errors[] = 'Bitte die URL der App angeben.';
+        $errors[] = 'Please enter the app URL.';
     }
 
     if (!$errors) {
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dirs = [$base_path, $base_path . '/logs', $base_path . '/logs/ratelimit'];
         foreach ($dirs as $dir) {
             if (!is_dir($dir) && !@mkdir($dir, 0700, true)) {
-                $errors[] = 'Verzeichnis konnte nicht angelegt werden: ' . htmlspecialchars($dir, ENT_QUOTES, 'UTF-8');
+                $errors[] = 'Directory could not be created: ' . htmlspecialchars($dir, ENT_QUOTES, 'UTF-8');
                 break;
             }
         }
@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         @chmod($base_path . '/settings.json', 0600);
 
         if (file_put_contents($_config, $config_content) === false) {
-            $errors[] = 'Konfigurationsdatei konnte nicht geschrieben werden. Bitte Schreibrechte prüfen.';
+            $errors[] = 'Configuration file could not be written. Please check write permissions.';
         } else {
             @chmod($_config, 0600);
             $success = true;
@@ -111,11 +111,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>jcapps-transfer einrichten</title>
+    <title>jcapps-transfer Setup</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f3f4f6; margin: 0; padding: 2rem 1rem; color: #111827; }
@@ -157,67 +157,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php if ($success): ?>
         <div class="success-box">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:.75rem;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            <h2>Einrichtung abgeschlossen!</h2>
-            <p>jcapps-transfer ist bereit. Du kannst dich jetzt einloggen.</p>
-            <a href="admin/index.php" class="btn">Zum Admin-Login</a>
+            <h2>Setup complete!</h2>
+            <p>jcapps-transfer is ready. You can now log in.</p>
+            <a href="admin/index.php" class="btn">Go to Admin Login</a>
         </div>
         <?php else: ?>
 
-        <h1>Einrichtung</h1>
-        <p class="sub">Gib dein Admin-Passwort und den Speicherort für Uploads an — fertig.</p>
+        <h1>Setup</h1>
+        <p class="sub">Set your admin password and the upload storage location — done.</p>
 
         <?php if ($errors): ?>
         <div class="error-box">
-            <strong>Bitte korrigieren:</strong>
+            <strong>Please fix:</strong>
             <ul><?php foreach ($errors as $e): ?><li><?= htmlspecialchars($e, ENT_QUOTES, 'UTF-8') ?></li><?php endforeach; ?></ul>
         </div>
         <?php endif; ?>
 
         <form method="POST">
             <div class="form-group">
-                <label for="site_name">Name der App</label>
+                <label for="site_name">App name</label>
                 <input type="text" id="site_name" name="site_name" maxlength="60"
                        value="<?= htmlspecialchars($_POST['site_name'] ?? 'Filetransfer', ENT_QUOTES, 'UTF-8') ?>">
-                <div class="hint">Wird in der Sidebar angezeigt.</div>
+                <div class="hint">Shown in the sidebar.</div>
             </div>
 
             <hr>
 
             <div class="form-group">
-                <label for="password">Admin-Passwort</label>
+                <label for="password">Admin password</label>
                 <input type="password" id="password" name="password" autocomplete="new-password">
-                <div class="hint">Mindestens 8 Zeichen. Wird verschlüsselt gespeichert.</div>
+                <div class="hint">At least 8 characters. Stored encrypted.</div>
             </div>
             <div class="form-group">
-                <label for="password2">Passwort wiederholen</label>
+                <label for="password2">Repeat password</label>
                 <input type="password" id="password2" name="password2" autocomplete="new-password">
             </div>
 
             <hr>
 
             <div class="form-group">
-                <label for="app_url">URL der App</label>
+                <label for="app_url">App URL</label>
                 <input type="url" id="app_url" name="app_url" maxlength="500"
                        value="<?= htmlspecialchars($_POST['app_url'] ?? $default_url, ENT_QUOTES, 'UTF-8') ?>">
-                <div class="hint">Öffentliche Adresse deiner Installation, z.B. <code>https://transfer.meinefirma.de</code></div>
+                <div class="hint">Public address of your installation, e.g. <code>https://transfer.yourcompany.com</code></div>
             </div>
 
             <div class="form-group">
-                <label for="base_path">Upload-Verzeichnis (absoluter Pfad)</label>
+                <label for="base_path">Upload directory (absolute path)</label>
                 <input type="text" id="base_path" name="base_path" maxlength="500"
                        value="<?= htmlspecialchars($_POST['base_path'] ?? $default_path, ENT_QUOTES, 'UTF-8') ?>">
                 <?php if ($inside_warning): ?>
                 <div class="hint" style="color:#92400e;">
-                    💡 Dein Hoster erlaubt keinen Schreibzugriff außerhalb des Webroots — der Pfad liegt daher innerhalb der App. Der Zugriff ist per <code>.htaccess</code> gesperrt, trotzdem empfiehlt sich ein Hoster mit mehr Verzeichniszugriff für Produktiv-Betrieb.
+                    💡 Your host does not allow write access outside the web root — the path is therefore inside the app. Access is blocked via <code>.htaccess</code>, but a host with broader directory access is recommended for production.
                 </div>
                 <?php else: ?>
-                <div class="hint">Wo Dateien gespeichert werden. Idealerweise <strong>außerhalb</strong> des öffentlichen Webverzeichnisses. Das Verzeichnis wird automatisch angelegt.</div>
+                <div class="hint">Where files are stored. Ideally <strong>outside</strong> the public web root. The directory will be created automatically.</div>
                 <?php endif; ?>
             </div>
 
             <button type="submit" class="btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Einrichtung abschließen
+                Complete setup
             </button>
         </form>
 

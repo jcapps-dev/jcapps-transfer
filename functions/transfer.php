@@ -1,6 +1,6 @@
 <?php
 /**
- * Transfer-Funktionen — Erstellen, Laden, Validieren, Streaming, Löschen
+ * Transfer functions — Create, load, validate, stream, delete
  */
 
 // ── Dateinamen-Sanitisierung ──────────────────────────────────────────────────
@@ -27,7 +27,7 @@ function transfer_sanitize_filename(string $name): string
 
     // Fallback bei leerem Namen
     if ($name === '') {
-        $name = 'datei_' . time();
+        $name = 'file_' . time();
     }
 
     // Maximallänge 255 Zeichen
@@ -113,11 +113,11 @@ function transfer_create(array $files, ?string $password, ?int $max_downloads, i
     $files_dir    = $transfer_dir . '/files';
 
     if (!mkdir($transfer_dir, 0700, true)) {
-        return ['error' => 'Transfer-Verzeichnis konnte nicht erstellt werden.'];
+        return ['error' => 'Transfer directory could not be created.'];
     }
     if (!mkdir($files_dir, 0700)) {
         rmdir($transfer_dir);
-        return ['error' => 'Datei-Verzeichnis konnte nicht erstellt werden.'];
+        return ['error' => 'File directory could not be created.'];
     }
 
     $stored_files = [];
@@ -128,13 +128,13 @@ function transfer_create(array $files, ?string $password, ?int $max_downloads, i
         // Extension-Blacklist (nach Normalisierung prüfen)
         if (transfer_check_extension_blacklist($original_name)) {
             transfer_delete_dir($transfer_dir);
-            return ['error' => 'Dateityp nicht erlaubt: ' . htmlspecialchars($original_name, ENT_QUOTES, 'UTF-8')];
+            return ['error' => 'File type not allowed: ' . htmlspecialchars($original_name, ENT_QUOTES, 'UTF-8')];
         }
 
-        // MIME-Typ-Whitelist
+        // MIME type whitelist
         if (!transfer_check_mimetype($file['tmp_path'])) {
             transfer_delete_dir($transfer_dir);
-            return ['error' => 'MIME-Typ nicht erlaubt: ' . htmlspecialchars($original_name, ENT_QUOTES, 'UTF-8')];
+            return ['error' => 'MIME type not allowed: ' . htmlspecialchars($original_name, ENT_QUOTES, 'UTF-8')];
         }
 
         // Zufälligen Speichernamen vergeben (kein Rückschluss auf Original)
@@ -143,7 +143,7 @@ function transfer_create(array $files, ?string $password, ?int $max_downloads, i
 
         if (!move_uploaded_file($file['tmp_path'], $dest)) {
             transfer_delete_dir($transfer_dir);
-            return ['error' => 'Datei konnte nicht gespeichert werden: ' . htmlspecialchars($original_name, ENT_QUOTES, 'UTF-8')];
+            return ['error' => 'File could not be saved: ' . htmlspecialchars($original_name, ENT_QUOTES, 'UTF-8')];
         }
         chmod($dest, 0600);
 
@@ -176,7 +176,7 @@ function transfer_create(array $files, ?string $password, ?int $max_downloads, i
     $meta_path = $transfer_dir . '/meta.json';
     if (file_put_contents($meta_path, json_encode($meta, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX) === false) {
         transfer_delete_dir($transfer_dir);
-        return ['error' => 'Metadaten konnten nicht gespeichert werden.'];
+        return ['error' => 'Metadata could not be saved.'];
     }
     chmod($meta_path, 0600);
 
@@ -279,7 +279,7 @@ function transfer_stream_file(array $meta): void
         $base = realpath(TRANSFER_BASE . '/' . $token . '/files');
         if (!$real || !$base || !str_starts_with($real, $base . '/')) {
             http_response_code(500);
-            die('Ungültiger Dateipfad.');
+            die('Invalid file path.');
         }
 
         $safe_name = rawurlencode($f['original_name']);
@@ -292,7 +292,7 @@ function transfer_stream_file(array $meta): void
 
         set_time_limit(0);
         $fp = fopen($path, 'rb');
-        if (!$fp) { http_response_code(500); die('Datei konnte nicht geöffnet werden.'); }
+        if (!$fp) { http_response_code(500); die('File could not be opened.'); }
 
         while (!feof($fp)) {
             echo fread($fp, 65536);
@@ -308,12 +308,12 @@ function transfer_stream_file(array $meta): void
         if (!file_exists($zip_path)) {
             if (!class_exists('ZipArchive')) {
                 http_response_code(500);
-                die('ZIP-Erstellung nicht möglich (ZipArchive nicht verfügbar).');
+                die('ZIP creation not possible (ZipArchive not available).');
             }
             $zip = new ZipArchive();
             if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
                 http_response_code(500);
-                die('ZIP konnte nicht erstellt werden.');
+                die('ZIP could not be created.');
             }
             foreach ($files as $f) {
                 $src = TRANSFER_BASE . '/' . $token . '/files/' . $f['stored_name'];
@@ -336,7 +336,7 @@ function transfer_stream_file(array $meta): void
 
         set_time_limit(0);
         $fp = fopen($zip_path, 'rb');
-        if (!$fp) { http_response_code(500); die('ZIP konnte nicht geöffnet werden.'); }
+        if (!$fp) { http_response_code(500); die('ZIP could not be opened.'); }
 
         while (!feof($fp)) {
             echo fread($fp, 65536);
@@ -450,7 +450,7 @@ function settings_defaults(): array
 {
     return [
         'site_name'     => 'Filetransfer',
-        'company_name'  => 'Sicherer Datei-Transfer',
+        'company_name'  => 'Secure File Transfer',
         'footer_text'   => '',
         'impressum_url' => '',
         'has_logo'      => false,

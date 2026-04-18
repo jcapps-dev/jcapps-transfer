@@ -52,31 +52,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $config   = require $config_file;
 
     if (!password_verify($password, $config['admin_password_hash'])) {
-        $error = 'Falsches Passwort.';
+        $error = 'Wrong password.';
     } elseif (!$latest) {
-        $error = 'GitHub konnte nicht erreicht werden.';
+        $error = 'GitHub could not be reached.';
     } else {
-        // Schreibtest: kann PHP bestehende PHP-Dateien überschreiben?
+        // Write test: can PHP overwrite existing PHP files?
         $php_test_file = $app_root . '/public/admin/version.php';
         $php_test_content = @file_get_contents($php_test_file);
         $can_overwrite_php = ($php_test_content !== false && @file_put_contents($php_test_file, $php_test_content) !== false);
         if (!$can_overwrite_php) {
-            $error = 'PHP-Dateien können nicht überschrieben werden. Bitte das Update manuell per FTP durchführen.';
+            $error = 'PHP files cannot be overwritten. Please update manually via FTP.';
         } else {
 
             $zip_url = $latest['zipball_url'];
             $tmp     = $app_root . '/_update_download_' . time() . '.zip';
 
             if (!_update_download($zip_url, $tmp)) {
-                $error = 'Download fehlgeschlagen. Möglicherweise blockiert dein Hoster ausgehende Verbindungen.';
+                $error = 'Download failed. Your host may be blocking outgoing connections.';
             } else {
                 $result = _update_extract($tmp, $app_root);
                 @unlink($tmp);
 
                 if (!$result) {
-                    $error = 'Entpacken fehlgeschlagen.';
+                    $error = 'Extraction failed.';
                 } else {
-                    // Tatsächlich installierte Version lesen
+                    // Read actually installed version
                     $ver_file = $app_root . '/public/admin/version.php';
                     $installed = '?';
                     if (is_file($ver_file)) {
@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         @unlink(TRANSFER_BASE . '/update_check.json');
                         $success = true;
                     } else {
-                        $error = 'Update wurde durchgeführt, aber Version stimmt nicht überein (installiert: ' . htmlspecialchars($installed, ENT_QUOTES, 'UTF-8') . '). Bitte manuell per FTP aktualisieren.';
+                        $error = 'Update performed but version mismatch (installed: ' . htmlspecialchars($installed, ENT_QUOTES, 'UTF-8') . '). Please update manually via FTP.';
                     }
                 }
             }
@@ -168,11 +168,11 @@ function _update_rmdir(string $dir): void {
 }
 ?>
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>jcapps-transfer aktualisieren</title>
+    <title>jcapps-transfer Update</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f3f4f6; margin: 0; padding: 2rem 1rem; color: #111827; }
@@ -215,22 +215,22 @@ function _update_rmdir(string $dir): void {
         <?php if ($success): ?>
         <div class="success-box">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:.75rem;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            <h2>Update erfolgreich!</h2>
-            <p>jcapps-transfer wurde auf Version <strong><?= htmlspecialchars($latest_version, ENT_QUOTES, 'UTF-8') ?></strong> aktualisiert.<br>Deine Konfiguration und alle Uploads sind unverändert.</p>
-            <a href="admin/dashboard.php" class="btn">Zum Dashboard</a>
+            <h2>Update successful!</h2>
+            <p>jcapps-transfer has been updated to version <strong><?= htmlspecialchars($latest_version, ENT_QUOTES, 'UTF-8') ?></strong>.<br>Your configuration and all uploads are unchanged.</p>
+            <a href="admin/dashboard.php" class="btn">Go to Dashboard</a>
         </div>
         <?php else: ?>
 
         <h1>Update</h1>
-        <p class="sub">Alle App-Dateien werden aktualisiert. Deine Konfiguration, Uploads und Logs bleiben erhalten.</p>
+        <p class="sub">All app files will be updated. Your configuration, uploads and logs will be preserved.</p>
 
         <div class="versions">
             <div class="ver-box">
-                <div class="ver-label">Installiert</div>
+                <div class="ver-label">Installed</div>
                 <div class="ver-number"><?= htmlspecialchars($current_version, ENT_QUOTES, 'UTF-8') ?></div>
             </div>
             <div class="ver-box">
-                <div class="ver-label">Verfügbar</div>
+                <div class="ver-label">Available</div>
                 <div class="ver-number new"><?= $latest_version ? htmlspecialchars($latest_version, ENT_QUOTES, 'UTF-8') : '–' ?></div>
             </div>
         </div>
@@ -240,20 +240,20 @@ function _update_rmdir(string $dir): void {
         <?php endif; ?>
 
         <?php if ($up_to_date): ?>
-        <div class="info-box">Du verwendest bereits die aktuelle Version. Ein Update ist nicht nötig.</div>
+        <div class="info-box">You are already using the latest version. No update needed.</div>
         <?php endif; ?>
 
         <form method="POST">
             <div class="form-group">
-                <label for="password">Admin-Passwort zur Bestätigung</label>
+                <label for="password">Admin password to confirm</label>
                 <input type="password" id="password" name="password" autocomplete="current-password">
             </div>
             <div style="display:flex;gap:.75rem;">
                 <button type="submit" class="btn">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
-                    Update installieren
+                    Install update
                 </button>
-                <a href="admin/dashboard.php" class="btn btn-ghost">Abbrechen</a>
+                <a href="admin/dashboard.php" class="btn btn-ghost">Cancel</a>
             </div>
         </form>
 

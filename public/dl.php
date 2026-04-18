@@ -134,12 +134,12 @@ function dl_show_page(?array $meta, string $status): void
     $token = $meta['token'] ?? htmlspecialchars($_GET['token'] ?? $_POST['token'] ?? '', ENT_QUOTES, 'UTF-8');
 ?>
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
-    <title>Datei herunterladen – <?= $company ?></title>
+    <title>Download file – <?= $company ?></title>
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body class="dl-page">
@@ -162,13 +162,13 @@ function dl_show_page(?array $meta, string $status): void
     </div>
 
     <?php if ($status === 'ok' && isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'): ?>
-    <div class="dl-security-hint">Sichere Übertragung</div>
+    <div class="dl-security-hint">Secure transfer</div>
     <?php endif; ?>
 
     <?php if (in_array($status, ['ok', 'wrong_password'], true) && $meta): ?>
 
         <?php if ($status === 'wrong_password'): ?>
-        <div class="msg msg-error">Falsches Passwort. Bitte erneut versuchen.</div>
+        <div class="msg msg-error">Wrong password. Please try again.</div>
         <?php endif; ?>
 
         <div class="dl-file-info">
@@ -178,22 +178,22 @@ function dl_show_page(?array $meta, string $status): void
                 if (count($files) === 1) {
                     echo htmlspecialchars($files[0]['original_name'], ENT_QUOTES, 'UTF-8');
                 } else {
-                    echo count($files) . ' Dateien (werden als ZIP heruntergeladen)';
+                    echo count($files) . ' files (downloaded as ZIP)';
                 }
                 ?>
             </div>
             <div class="dl-meta">
-                <span>Größe: <?= htmlspecialchars(transfer_format_size(transfer_total_size($meta)), ENT_QUOTES, 'UTF-8') ?></span>
+                <span>Size: <?= htmlspecialchars(transfer_format_size(transfer_total_size($meta)), ENT_QUOTES, 'UTF-8') ?></span>
                 <?php
                 $days_left = (int)ceil((strtotime($meta['expires_at']) - time()) / 86400);
-                $expires_str = date('d.m.Y', strtotime($meta['expires_at']));
+                $expires_str = date('Y-m-d', strtotime($meta['expires_at']));
                 $expires_label = $days_left > 0
-                    ? "Gültig bis $expires_str (noch $days_left Tag" . ($days_left === 1 ? '' : 'e') . ")"
-                    : "Gültig bis $expires_str";
+                    ? "Valid until $expires_str ($days_left day" . ($days_left === 1 ? '' : 's') . " remaining)"
+                    : "Valid until $expires_str";
                 ?>
                 <span><?= htmlspecialchars($expires_label, ENT_QUOTES, 'UTF-8') ?></span>
                 <?php if (!empty($meta['max_downloads'])): ?>
-                <span>Downloads noch: <?= (int)($meta['max_downloads'] - ($meta['download_count'] ?? 0)) ?></span>
+                <span>Downloads remaining: <?= (int)($meta['max_downloads'] - ($meta['download_count'] ?? 0)) ?></span>
                 <?php endif; ?>
             </div>
         </div>
@@ -203,16 +203,16 @@ function dl_show_page(?array $meta, string $status): void
 
             <?php if ($meta['password_hash'] !== null): ?>
             <div class="form-group">
-                <label for="dl_password">Passwort</label>
+                <label for="dl_password">Password</label>
                 <input type="password" id="dl_password" name="password" class="form-control"
-                       placeholder="Transfer-Passwort eingeben"
+                       placeholder="Enter transfer password"
                        autofocus required autocomplete="current-password">
-                <div class="form-hint">Das Passwort wurde Ihnen vom Absender mitgeteilt.</div>
+                <div class="form-hint">The password was provided to you by the sender.</div>
             </div>
             <?php endif; ?>
 
             <div class="dl-actions">
-                <button type="submit" class="btn" id="dl-btn">Herunterladen</button>
+                <button type="submit" class="btn" id="dl-btn">Download</button>
             </div>
         </form>
 
@@ -223,8 +223,8 @@ function dl_show_page(?array $meta, string $status): void
                     <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".5" fill="currentColor"/>
                 </svg>
             </span>
-            <h3>Zu viele Versuche</h3>
-            <p>Bitte 5 Minuten warten und dann erneut versuchen.</p>
+            <h3>Too many attempts</h3>
+            <p>Please wait 5 minutes and try again.</p>
         </div>
 
     <?php elseif ($status === 'ratelimit'): ?>
@@ -234,8 +234,8 @@ function dl_show_page(?array $meta, string $status): void
                     <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".5" fill="currentColor"/>
                 </svg>
             </span>
-            <h3>Zu viele Anfragen</h3>
-            <p>Bitte kurz warten und es dann erneut versuchen.</p>
+            <h3>Too many requests</h3>
+            <p>Please wait a moment and try again.</p>
         </div>
 
     <?php elseif ($status === 'revoked'): ?>
@@ -245,8 +245,8 @@ function dl_show_page(?array $meta, string $status): void
                     <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
                 </svg>
             </span>
-            <h3>Link widerrufen</h3>
-            <p>Dieser Download-Link wurde vom Absender deaktiviert.</p>
+            <h3>Link revoked</h3>
+            <p>This download link has been deactivated by the sender.</p>
         </div>
 
     <?php elseif ($status === 'expired'): ?>
@@ -256,9 +256,9 @@ function dl_show_page(?array $meta, string $status): void
                     <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                 </svg>
             </span>
-            <h3>Link abgelaufen</h3>
-            <p>Dieser Download-Link ist nicht mehr gültig.</p>
-            <p class="dl-error-action">Bitte wenden Sie sich an den Absender, um einen neuen Link zu erhalten.</p>
+            <h3>Link expired</h3>
+            <p>This download link is no longer valid.</p>
+            <p class="dl-error-action">Please contact the sender to receive a new link.</p>
         </div>
 
     <?php elseif ($status === 'maxdownloads'): ?>
@@ -268,9 +268,9 @@ function dl_show_page(?array $meta, string $status): void
                     <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".5" fill="currentColor"/>
                 </svg>
             </span>
-            <h3>Download-Limit erreicht</h3>
-            <p>Die maximale Anzahl an Downloads wurde erreicht.</p>
-            <p class="dl-error-action">Bitte wenden Sie sich an den Absender.</p>
+            <h3>Download limit reached</h3>
+            <p>The maximum number of downloads has been reached.</p>
+            <p class="dl-error-action">Please contact the sender.</p>
         </div>
 
     <?php else: ?>
@@ -280,16 +280,16 @@ function dl_show_page(?array $meta, string $status): void
                     <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
                 </svg>
             </span>
-            <h3>Link ungültig</h3>
-            <p>Dieser Download-Link existiert nicht oder ist ungültig.</p>
+            <h3>Invalid link</h3>
+            <p>This download link does not exist or is invalid.</p>
         </div>
     <?php endif; ?>
 </div>
 
 <?php if ($footer !== null): ?>
-<div class="dl-footer"><?= $footer ?><?php if ($impressum_url !== ''): ?> · <a href="<?= $impressum_url ?>" target="_blank" rel="noopener noreferrer">Impressum</a><?php endif; ?></div>
+<div class="dl-footer"><?= $footer ?><?php if ($impressum_url !== ''): ?> · <a href="<?= $impressum_url ?>" target="_blank" rel="noopener noreferrer">Legal notice</a><?php endif; ?></div>
 <?php else: ?>
-<div class="dl-footer"><?= $company ?> · Sicherer Datei-Transfer<?php if ($impressum_url !== ''): ?> · <a href="<?= $impressum_url ?>" target="_blank" rel="noopener noreferrer">Impressum</a><?php endif; ?></div>
+<div class="dl-footer"><?= $company ?> · Secure File Transfer<?php if ($impressum_url !== ''): ?> · <a href="<?= $impressum_url ?>" target="_blank" rel="noopener noreferrer">Legal notice</a><?php endif; ?></div>
 <?php endif; ?>
 
 <script src="assets/dl.js"></script>

@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Rate-Limit: max 10 Login-Versuche pro 5 Minuten
     if (ratelimit_is_blocked('login', $ip_hash, 10, 300)) {
-        $error = 'Zu viele Versuche. Bitte 5 Minuten warten.';
+        $error = 'Too many attempts. Please wait 5 minutes.';
     } else {
         $password = $_POST['password'] ?? '';
         if (auth_login($password)) {
@@ -51,13 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             log_event('admin_login_failed');
             // Kurze Verzögerung gegen Timing-Angriffe
             usleep(random_int(100000, 400000));
-            $error = 'Falsches Passwort.';
+            $error = 'Wrong password.';
         }
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         <?php endif; ?>
     </div>
-    <div class="login-security-hint">Sichere Übertragung</div>
+    <div class="login-security-hint">Secure connection</div>
 
     <?php if ($error): ?>
     <div class="msg msg-error"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
@@ -96,13 +96,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <form method="POST" action="">
         <?= csrf_field() ?>
         <div class="form-group">
-            <label for="password">Passwort</label>
+            <label for="password">Password</label>
             <input type="password" id="password" name="password"
                    class="form-control"
-                   placeholder="Admin-Passwort"
+                   placeholder="Admin password"
                    autofocus required autocomplete="current-password">
         </div>
-        <button type="submit" class="btn">Anmelden</button>
+        <button type="submit" class="btn">Sign in</button>
     </form>
 </div>
 
@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
     <?php if ($settings['impressum_url'] !== ''): ?>
         <?php if ($settings['footer_text'] !== ''): ?> · <?php endif; ?>
-        <a href="<?= htmlspecialchars($settings['impressum_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer">Impressum</a>
+        <a href="<?= htmlspecialchars($settings['impressum_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer">Legal notice</a>
     <?php endif; ?>
 </div>
 <?php endif; ?>
