@@ -87,8 +87,8 @@ function copyUrl() {
     var urlEl = document.getElementById('dl-url');
     if (!btn || !urlEl) return;
     navigator.clipboard.writeText(urlEl.textContent.trim())
-        .then(function() { flashBtn(btn, '\u2713 Kopiert'); })
-        .catch(function() { flashBtn(btn, '\u2717 Fehler'); });
+        .then(function() { flashBtn(btn, '\u2713 Copied'); })
+        .catch(function() { flashBtn(btn, '\u2717 Error'); });
 }
 
 function copyPw() {
@@ -98,8 +98,8 @@ function copyPw() {
     var pw = resultEl ? JSON.parse(resultEl.textContent).password : null;
     if (!pw) return;
     navigator.clipboard.writeText(pw)
-        .then(function() { flashBtn(btn, '\u2713 Kopiert'); })
-        .catch(function() { flashBtn(btn, '\u2717 Fehler'); });
+        .then(function() { flashBtn(btn, '\u2713 Copied'); })
+        .catch(function() { flashBtn(btn, '\u2717 Error'); });
 }
 
 function formatSize(bytes) {

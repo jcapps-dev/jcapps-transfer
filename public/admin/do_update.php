@@ -53,15 +53,15 @@ if (!version_compare($latest, APP_VERSION, '>')) {
     exit;
 }
 
-// ZIP herunterladen
-$tmp = sys_get_temp_dir() . '/jcapps-transfer-update-' . time() . '.zip';
+// ZIP herunterladen (temp file in app root — sys_get_temp_dir() may be restricted on shared hosts)
+$app_root = dirname(dirname(__DIR__));
+$tmp = $app_root . '/_update_download_' . time() . '.zip';
 if (!_do_download($zip_url, $tmp)) {
     echo json_encode(['success' => false, 'error' => 'Download failed.']);
     exit;
 }
 
 // Entpacken
-$app_root  = dirname(dirname(__DIR__));
 $protected = ['config.php'];
 
 if (!_do_extract($tmp, $app_root, $protected)) {

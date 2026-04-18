@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1] — 2026-04-18
+
+### Bug fix
+
+- `do_update.php`: use app root instead of `sys_get_temp_dir()` for download temp file — fixes in-app update on shared hosts where the system temp dir is not writable
+- Translate remaining German strings in JS files (`admin-dashboard.js`, `admin-upload.js`)
+
 ## [1.1.0] — 2026-04-18
 
 ### Localization

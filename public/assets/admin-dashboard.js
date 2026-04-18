@@ -3,14 +3,14 @@ function copyLink(btn) {
     if (!url) return;
     navigator.clipboard.writeText(url).then(function() {
         var orig = btn.textContent;
-        btn.textContent = '\u2713 Kopiert';
+        btn.textContent = '\u2713 Copied';
         btn.classList.add('copied');
         setTimeout(function() {
             btn.textContent = orig;
             btn.classList.remove('copied');
         }, 2000);
     }).catch(function() {
-        btn.textContent = '\u2717 Fehler';
+        btn.textContent = '\u2717 Error';
         setTimeout(function() { btn.textContent = '\uD83D\uDCCB Link'; }, 2000);
     });
 }
@@ -18,7 +18,7 @@ function copyLink(btn) {
 function inlineConfirm(btn) {
     var form    = btn.closest('form');
     var actions = btn.closest('.td-actions');
-    var msg     = btn.getAttribute('data-confirm') || 'Wirklich?';
+    var msg     = btn.getAttribute('data-confirm') || 'Are you sure?';
 
     Array.from(actions.children).forEach(function(el) { el.style.display = 'none'; });
 
@@ -29,13 +29,13 @@ function inlineConfirm(btn) {
     var yesBtn = document.createElement('button');
     yesBtn.type = 'button';
     yesBtn.className = 'btn btn-sm btn-danger';
-    yesBtn.textContent = 'Ja';
+    yesBtn.textContent = 'Yes';
     yesBtn.onclick = function() { form.submit(); };
 
     var noBtn = document.createElement('button');
     noBtn.type = 'button';
     noBtn.className = 'btn btn-sm btn-ghost';
-    noBtn.textContent = 'Abbrechen';
+    noBtn.textContent = 'Cancel';
     noBtn.onclick = function() {
         actions.removeChild(conf);
         Array.from(actions.children).forEach(function(el) { el.style.display = ''; });
@@ -59,11 +59,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var updateBtn = document.getElementById('do-update-btn');
     if (updateBtn) {
         updateBtn.addEventListener('click', function() {
-            if (!confirm('App jetzt aktualisieren? Die Seite wird danach neu geladen.')) return;
+            if (!confirm('Update the app now? The page will reload afterwards.')) return;
 
             var status = document.getElementById('update-status');
             updateBtn.disabled = true;
-            updateBtn.textContent = 'Wird aktualisiert…';
+            updateBtn.textContent = 'Updating…';
             status.style.display = 'none';
 
             var csrf = document.querySelector('meta[name="csrf-token"]');
@@ -77,22 +77,22 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(function(data) {
                 if (data.success) {
                     status.style.display = 'inline';
-                    status.textContent = '✓ Aktualisiert auf v' + data.version + ' — Seite wird neu geladen…';
+                    status.textContent = '✓ Updated to v' + data.version + ' — reloading…';
                     setTimeout(function() { location.reload(); }, 2000);
                 } else {
                     updateBtn.disabled = false;
-                    updateBtn.textContent = 'Jetzt aktualisieren';
+                    updateBtn.textContent = 'Update now';
                     status.style.display = 'inline';
                     status.style.color = '#991b1b';
-                    status.textContent = '✗ ' + (data.error || 'Unbekannter Fehler');
+                    status.textContent = '✗ ' + (data.error || 'Unknown error');
                 }
             })
             .catch(function() {
                 updateBtn.disabled = false;
-                updateBtn.textContent = 'Jetzt aktualisieren';
+                updateBtn.textContent = 'Update now';
                 status.style.display = 'inline';
                 status.style.color = '#991b1b';
-                status.textContent = '✗ Netzwerkfehler — bitte erneut versuchen';
+                status.textContent = '✗ Network error — please try again';
             });
         });
     }
