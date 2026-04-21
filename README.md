@@ -1,125 +1,119 @@
 # jcapps-transfer
 
-Sicherer Datei-Transfer für Teams. Admins laden Dateien hoch und verschicken Download-Links per E-Mail — Empfänger brauchen keinen Account.
+Self-hosted file sharing. Upload a file, get a link, the recipient downloads without an account. It started because we didn't want someone else's branding on links going to customers.
 
 ---
 
-## Funktionen
+## Features
 
-- **Einfaches Hochladen** — Dateien per Drag & Drop, mehrere Dateien gleichzeitig (automatisch als ZIP)
-- **Sichere Download-Links** — 256-Bit-Zufallstoken, optional passwortgeschützt
-- **Automatisch ablaufend** — Links verfallen nach konfigurierbarer Anzahl von Tagen
-- **Download-Limit** — optional: Link sperrt sich nach N Downloads
-- **Widerrufen** — Links können jederzeit deaktiviert werden
-- **Branding** — eigenes Logo, Firmenname und Footer-Text konfigurierbar
-- **Datenschutz** — IP-Adressen werden nur gehasht gespeichert (DSGVO-freundlich)
-- **Kein Datenbank** — alle Daten als einfache Dateien, kein MySQL nötig
+- **Drag & drop upload** — multiple files at once, automatically zipped
+- **Secure download links** — 256-bit random tokens, optional password protection
+- **Auto-expiry** — links expire after a configurable number of days
+- **Download limit** — optionally lock a link after N downloads
+- **Revoke anytime** — disable any link from the admin dashboard
+- **Branding** — configure your own logo, company name and footer text
+- **Privacy** — IP addresses stored as hashed values only (GDPR-friendly)
+- **No database** — flat-file storage, no MySQL required
 
 ---
 
 ## Installation
 
-### Voraussetzungen
+**Requirements:** PHP 8.0+, Apache with `mod_rewrite`. No Composer, no npm, nothing else.
 
-- PHP 8.0 oder neuer
-- Apache mit `mod_rewrite` (die meisten Webhoster erfüllen das)
-- Kein MySQL, kein Composer, keine weitere Software nötig
+**1.** [Download `install.php`](https://github.com/jcapps-dev/jcapps-transfer/releases/latest)
 
-### In 3 Schritten
+**2.** Upload it to your webroot (FTP, file manager, rsync — whatever works)
 
-**1.** [`install.php` herunterladen](https://github.com/jcapps-dev/jcapps-transfer/releases/latest)
-
-**2.** Ins Webverzeichnis hochladen (z.B. per FTP oder Dateimanager des Hosters)
-
-**3.** Im Browser aufrufen:
+**3.** Open it in your browser:
 ```
-https://deine-domain.de/install.php
+https://your-domain.com/install.php
 ```
 
-Der Installer lädt automatisch die aktuelle Version herunter und startet den Setup-Assistenten. Dort nur Passwort und Upload-Verzeichnis eingeben — fertig.
+The installer downloads the latest release and walks you through setup. Set a password, confirm the upload directory — done.
 
 ---
 
-## Update
+## Updating
 
-Wenn im Admin-Dashboard ein Update angezeigt wird:
+When the admin dashboard shows an available update:
 
-**1.** [`update.php` herunterladen](https://github.com/jcapps-dev/jcapps-transfer/releases/latest)
+**1.** [Download `update.php`](https://github.com/jcapps-dev/jcapps-transfer/releases/latest)
 
-**2.** Ins Webverzeichnis hochladen
+**2.** Upload it to your webroot
 
-**3.** Im Browser aufrufen:
+**3.** Open it in your browser:
 ```
-https://deine-domain.de/update.php
+https://your-domain.com/update.php
 ```
 
-Konfiguration, Uploads und Logs bleiben dabei vollständig erhalten.
+Config, uploads and logs are fully preserved.
 
 ---
 
-## Manuelle Installation
+## Manual installation
 
-Falls der automatische Installer nicht verfügbar ist:
+If the installer is not an option:
 
-1. [Aktuelle Version als ZIP herunterladen](https://github.com/jcapps-dev/jcapps-transfer/releases/latest)
-2. Entpacken und ins Webverzeichnis hochladen
-3. `config.example.php` kopieren und anpassen:
+1. [Download the latest release as ZIP](https://github.com/jcapps-dev/jcapps-transfer/releases/latest)
+2. Extract and upload to your webroot
+3. Copy and edit the config:
    ```bash
    cp config.example.php config.php
    ```
-4. Upload-Verzeichnis anlegen (außerhalb des Webroots empfohlen):
+4. Create the upload directory (outside webroot recommended):
    ```bash
-   mkdir -p /pfad/ausserhalb/webroot/transfers/logs/ratelimit
-   chmod 700 /pfad/ausserhalb/webroot/transfers
+   mkdir -p /path/outside/webroot/transfers/logs/ratelimit
+   chmod 700 /path/outside/webroot/transfers
    ```
-5. Admin-Passwort-Hash erzeugen und in `config.php` eintragen:
+5. Generate the admin password hash and add it to `config.php`:
    ```bash
-   php -r "echo password_hash('MeinPasswort', PASSWORD_BCRYPT, ['cost'=>12]);"
+   php -r "echo password_hash('yourpassword', PASSWORD_BCRYPT, ['cost'=>12]);"
    ```
 
 ---
 
-## Konfiguration
+## Configuration
 
-Alle Einstellungen in `config.php`:
+All settings in `config.php`:
 
-| Option | Beschreibung | Standard |
+| Option | Description | Default |
 |--------|-------------|---------|
-| `transfer_base_path` | Pfad für Uploads | — |
-| `admin_password_hash` | bcrypt-Hash des Admin-Passworts | — |
-| `max_filesize_mb` | Maximale Dateigröße in MB | `1024` |
-| `max_files_per_upload` | Maximale Anzahl Dateien pro Transfer | `10` |
-| `transfer_lifetime_days` | Ablaufzeit der Links in Tagen | `14` |
-| `app_url` | Öffentliche URL der Installation | — |
+| `transfer_base_path` | Path for uploads | — |
+| `admin_password_hash` | bcrypt hash of admin password | — |
+| `max_filesize_mb` | Max file size in MB | `1024` |
+| `max_files_per_upload` | Max files per transfer | `10` |
+| `transfer_lifetime_days` | Link expiry in days | `14` |
+| `app_url` | Public URL of the installation | — |
 
-Branding (Logo, Firmenname, Footer) ist direkt im Admin-Bereich unter **Einstellungen** konfigurierbar.
-
----
-
-## Cronjob (empfohlen)
-
-Abgelaufene Transfers und Dateien werden automatisch bereinigt wenn ein Cronjob eingerichtet ist:
-
-```
-0 4 * * * php /pfad/zum/webverzeichnis/cleanup.php
-```
+Branding (logo, company name, footer) is configurable in the admin panel under **Settings**.
 
 ---
 
-## Verzeichnisstruktur
+## Cron job (recommended)
+
+Expired transfers and files are cleaned up automatically if a cron job is set up:
+
+```
+0 4 * * * php /path/to/webroot/cleanup.php
+```
+
+---
+
+## Directory structure
 
 ```
 jcapps-transfer/
-├── install.php          ← einmalig: lädt Release herunter
-├── functions/           ← PHP-Funktionen (HTTP-Zugriff gesperrt)
-├── config.php           ← deine Konfiguration (nicht im Repo)
-└── public/              ← Webroot
-    ├── setup.php        ← einmalig: Einrichtungsassistent
-    ├── update.php       ← bei Updates hochladen
-    ├── dl.php           ← Download-Endpoint für Empfänger
-    └── admin/           ← Admin-Interface (Login erforderlich)
+├── install.php          ← one-time: downloads the release
+├── functions/           ← PHP functions (HTTP access blocked)
+├── config.php           ← your config (not in repo)
+└── public/              ← webroot
+    ├── setup.php        ← one-time: setup wizard
+    ├── update.php       ← upload when updating
+    ├── dl.php           ← download endpoint for recipients
+    └── admin/           ← admin interface (login required)
 
-/pfad/ausserhalb/webroot/transfers/    ← Uploads (nicht im Webroot!)
+/path/outside/webroot/transfers/    ← uploads (not in webroot)
     ├── {token}/
     │   ├── meta.json
     │   └── files/
@@ -128,22 +122,28 @@ jcapps-transfer/
 
 ---
 
-## Sicherheit
+## Security
 
-| Mechanismus | Details |
+| Mechanism | Details |
 |---|---|
-| Download-Token | 256-Bit Zufallswert |
-| Admin-Passwort | bcrypt, cost 12 |
-| CSRF-Schutz | Synchronizer Token |
-| Rate-Limiting | Filesystem-basiert, IP gehasht |
-| Uploads | außerhalb des Webroots empfohlen |
-| Content-Security-Policy | aktiv, kein inline-JS |
+| Download token | 256-bit random value |
+| Admin password | bcrypt, cost 12 |
+| CSRF protection | Synchronizer token |
+| Rate limiting | Filesystem-based, IP hashed |
+| Uploads | Outside webroot recommended |
+| Content-Security-Policy | Active, no inline JS |
 
 ---
 
-## Lizenz
+## Screenshots
 
-MIT — frei verwendbar, auch kommerziell.
+[jcapps.dev/screenshots.html](https://jcapps.dev/screenshots.html)
+
+---
+
+## License
+
+MIT — free to use, including commercially.
 
 ---
 
