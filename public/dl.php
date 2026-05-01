@@ -147,7 +147,7 @@ function dl_show_page(?array $meta, string $status): void
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title>Download file – <?= $company ?></title>
-    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="<?= rtrim(APP_URL, '/') ?>/assets/style.css">
 </head>
 <body class="dl-page">
 
@@ -299,7 +299,7 @@ function dl_show_page(?array $meta, string $status): void
 <div class="dl-footer"><?= $company ?> · Secure File Transfer<?php if ($impressum_url !== ''): ?> · <a href="<?= $impressum_url ?>" target="_blank" rel="noopener noreferrer">Legal notice</a><?php endif; ?></div>
 <?php endif; ?>
 
-<script src="assets/dl.js"></script>
+<script src="<?= rtrim(APP_URL, '/') ?>/assets/dl.js"></script>
 </body>
 </html>
 <?php
