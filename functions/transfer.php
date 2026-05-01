@@ -183,6 +183,82 @@ function transfer_create(array $files, ?string $password, ?int $max_downloads, i
     return ['token' => $token, 'meta' => $meta];
 }
 
+// ── Create transfer from assembled paths ─────────────────────────────────────
+
+function transfer_create_from_paths(array $files, ?string $password, ?int $max_downloads, int $lifetime_days): array
+{
+    $token = bin2hex(random_bytes(32));
+
+    $transfer_dir = TRANSFER_BASE . '/' . $token;
+    $files_dir    = $transfer_dir . '/files';
+
+    if (!mkdir($transfer_dir, 0700, true)) {
+        return ['error' => 'Transfer directory could not be created.'];
+    }
+    if (!mkdir($files_dir, 0700)) {
+        rmdir($transfer_dir);
+        return ['error' => 'File directory could not be created.'];
+    }
+
+    $stored_files = [];
+
+    foreach ($files as $file) {
+        $original_name = transfer_sanitize_filename($file['name']);
+
+        if (transfer_check_extension_blacklist($original_name)) {
+            transfer_delete_dir($transfer_dir);
+            return ['error' => 'File type not allowed: ' . htmlspecialchars($original_name, ENT_QUOTES, 'UTF-8')];
+        }
+
+        if (!transfer_check_mimetype($file['path'])) {
+            transfer_delete_dir($transfer_dir);
+            return ['error' => 'MIME type not allowed: ' . htmlspecialchars($original_name, ENT_QUOTES, 'UTF-8')];
+        }
+
+        $stored_name = bin2hex(random_bytes(16)) . '.dat';
+        $dest        = $files_dir . '/' . $stored_name;
+
+        if (!rename($file['path'], $dest)) {
+            transfer_delete_dir($transfer_dir);
+            return ['error' => 'File could not be saved: ' . htmlspecialchars($original_name, ENT_QUOTES, 'UTF-8')];
+        }
+        chmod($dest, 0600);
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $stored_files[] = [
+            'original_name' => $original_name,
+            'stored_name'   => $stored_name,
+            'size'          => filesize($dest),
+            'mimetype'      => $finfo->file($dest),
+        ];
+    }
+
+    $now     = new DateTimeImmutable('now', new DateTimeZone('Europe/Berlin'));
+    $expires = $now->modify('+' . $lifetime_days . ' days');
+
+    $meta = [
+        'token'          => $token,
+        'files'          => $stored_files,
+        'password_hash'  => ($password !== null && $password !== '')
+            ? password_hash($password, PASSWORD_BCRYPT, ['cost' => 12])
+            : null,
+        'max_downloads'  => $max_downloads,
+        'download_count' => 0,
+        'created_at'     => $now->format('c'),
+        'expires_at'     => $expires->format('c'),
+        'revoked'        => false,
+    ];
+
+    $meta_path = $transfer_dir . '/meta.json';
+    if (file_put_contents($meta_path, json_encode($meta, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX) === false) {
+        transfer_delete_dir($transfer_dir);
+        return ['error' => 'Metadata could not be saved.'];
+    }
+    chmod($meta_path, 0600);
+
+    return ['token' => $token, 'meta' => $meta];
+}
+
 // ── Transfer laden ────────────────────────────────────────────────────────────
 
 function transfer_load(string $token): ?array
@@ -305,6 +381,8 @@ function transfer_stream_file(array $meta): void
         // Mehrere Dateien → ZIP erstellen (gecacht im Transfer-Verzeichnis)
         $zip_path = TRANSFER_BASE . '/' . $token . '/_download.zip';
 
+        set_time_limit(0); // before ZIP creation, not after
+
         if (!file_exists($zip_path)) {
             if (!class_exists('ZipArchive')) {
                 http_response_code(500);
@@ -325,7 +403,8 @@ function transfer_stream_file(array $meta): void
             chmod($zip_path, 0600);
         }
 
-        $zip_name = 'Transfer_' . date('Y-m-d') . '.zip';
+        $site_name = preg_replace('/[^\w\-]/u', '_', settings_load()['site_name'] ?? 'Transfer');
+        $zip_name  = $site_name . '_' . date('Y-m-d') . '.zip';
         $zip_size = filesize($zip_path);
 
         header('Content-Type: application/zip');
@@ -334,7 +413,6 @@ function transfer_stream_file(array $meta): void
         header('Cache-Control: no-cache, no-store, must-revalidate');
         header('Pragma: no-cache');
 
-        set_time_limit(0);
         $fp = fopen($zip_path, 'rb');
         if (!$fp) { http_response_code(500); die('ZIP could not be opened.'); }
 

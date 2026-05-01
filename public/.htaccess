@@ -1,5 +1,8 @@
 Options -Indexes
 
+# Limit request body to chunk size (4 MB chunk + overhead)
+LimitRequestBody 5242880
+
 # HTTPS erzwingen
 RewriteEngine On
 RewriteCond %{HTTPS} off

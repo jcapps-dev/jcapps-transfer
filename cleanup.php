@@ -99,6 +99,27 @@ if (!is_dir(TRANSFER_BASE)) {
     }
 }
 
+// ── Clean up stale chunk directories (abandoned uploads > 24h) ─────────────
+$chunks_base = TRANSFER_BASE . '/chunks';
+if (is_dir($chunks_base)) {
+    $chunk_dirs = glob($chunks_base . '/[a-f0-9]*', GLOB_ONLYDIR) ?: [];
+    $cutoff     = time() - 86400; // 24 hours
+    $chunks_deleted = 0;
+
+    foreach ($chunk_dirs as $dir) {
+        if (!preg_match('/^[a-f0-9]{32}$/', basename($dir))) continue;
+        if (filemtime($dir) < $cutoff) {
+            if (delete_dir_recursive($dir)) {
+                $chunks_deleted++;
+            }
+        }
+    }
+
+    if ($chunks_deleted > 0) {
+        echo "  ✓ Stale chunk directories deleted: {$chunks_deleted}\n";
+    }
+}
+
 // ── Rate-Limit-Dateien aufräumen ──────────────────────────────────────────────
 ratelimit_cleanup();
 echo "  ✓ Rate limit files cleaned up\n";

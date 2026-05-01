@@ -44,7 +44,7 @@ define('APP_URL',        rtrim($config['app_url'], '/'));
 if (!defined('APP_VERSION')) define('APP_VERSION', '1.0.6');
 
 // Security-Header
-header("Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';");
+header("Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; frame-ancestors 'none';");
 
 // Functions laden
 require_once __DIR__ . '/logger.php';
