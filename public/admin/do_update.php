@@ -53,8 +53,16 @@ if (!version_compare($latest, APP_VERSION, '>')) {
     exit;
 }
 
-// ZIP herunterladen (temp file in app root — sys_get_temp_dir() may be restricted on shared hosts)
+// Write-Test: kann PHP bestehende PHP-Dateien überschreiben?
 $app_root = dirname(dirname(__DIR__));
+$_ver_file = $app_root . '/public/admin/version.php';
+$_ver_orig = @file_get_contents($_ver_file);
+if ($_ver_orig === false || @file_put_contents($_ver_file, $_ver_orig) === false) {
+    echo json_encode(['success' => false, 'error' => 'PHP files cannot be overwritten. Please update manually via FTP.']);
+    exit;
+}
+
+// ZIP herunterladen (temp file in app root — sys_get_temp_dir() may be restricted on shared hosts)
 $tmp = $app_root . '/_update_download_' . time() . '.zip';
 if (!_do_download($zip_url, $tmp)) {
     echo json_encode(['success' => false, 'error' => 'Download failed.']);
@@ -71,6 +79,17 @@ if (!_do_extract($tmp, $app_root, $protected)) {
 }
 
 @unlink($tmp);
+
+// Versions-Verifikation: wurde version.php tatsächlich aktualisiert?
+$_installed = '?';
+$_ver_content = @file_get_contents($_ver_file);
+if ($_ver_content && preg_match("/APP_VERSION',\s*'([^']+)'/", $_ver_content, $_m)) {
+    $_installed = $_m[1];
+}
+if ($_installed !== $latest) {
+    echo json_encode(['success' => false, 'error' => 'Files could not be overwritten (installed: ' . $_installed . '). Please update manually via FTP.']);
+    exit;
+}
 
 // Update-Cache leeren
 @unlink(TRANSFER_BASE . '/update_check.json');
