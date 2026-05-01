@@ -143,6 +143,6 @@ log_event('transfer_created', [
 echo json_encode([
     'ok'       => true,
     'token'    => $res['token'],
-    'url'      => transfer_download_url($res['token']),
+    'url'      => isset($res['short_code']) ? APP_URL . '/dl/' . $res['short_code'] : transfer_download_url($res['token']),
     'password' => $password,
 ]);

@@ -3,10 +3,11 @@ Options -Indexes
 # Limit request body to chunk size (4 MB chunk + overhead)
 LimitRequestBody 5242880
 
-# HTTPS erzwingen
+# HTTPS erzwingen + kurze Download-URLs
 RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+RewriteRule ^dl/([a-zA-Z0-9]{8})$ dl.php?t=$1 [QSA,L]
 
 # Security Headers
 <IfModule mod_headers.c>

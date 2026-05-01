@@ -8,7 +8,7 @@ Self-hosted file sharing. Upload a file, get a link, the recipient downloads wit
 
 - **Drag & drop upload** — multiple files at once, automatically zipped
 - **Large file support** — chunked upload bypasses server limits (tested up to 5 GB)
-- **Secure download links** — 256-bit random tokens, optional password protection
+- **Secure download links** — 256-bit random tokens, optional password protection, short URLs (`/dl/abc12345`)
 - **Auto-expiry** — links expire after a configurable number of days
 - **Download limit** — optionally lock a link after N downloads
 - **Revoke anytime** — disable any link from the admin dashboard

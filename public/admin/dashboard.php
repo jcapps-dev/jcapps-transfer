@@ -189,7 +189,7 @@ if (is_file($_cache_file)) {
                             $dl_count  = (int)($t['download_count'] ?? 0);
                             $dl_max    = $t['max_downloads'] ?? null;
                             $dl_text   = $dl_max !== null ? $dl_count . ' / ' . $dl_max : $dl_count . ' / ∞';
-                            $dl_url    = transfer_download_url($t['token']);
+                            $dl_url    = isset($t['short_code']) ? APP_URL . '/dl/' . $t['short_code'] : transfer_download_url($t['token']);
                             $has_pw    = $t['password_hash'] !== null;
 
                             $badge_class = match($status) {

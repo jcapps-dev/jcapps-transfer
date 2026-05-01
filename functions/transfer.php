@@ -187,7 +187,8 @@ function transfer_create(array $files, ?string $password, ?int $max_downloads, i
 
 function transfer_create_from_paths(array $files, ?string $password, ?int $max_downloads, int $lifetime_days): array
 {
-    $token = bin2hex(random_bytes(32));
+    $token      = bin2hex(random_bytes(32));
+    $short_code = transfer_generate_short_code();
 
     $transfer_dir = TRANSFER_BASE . '/' . $token;
     $files_dir    = $transfer_dir . '/files';
@@ -238,6 +239,7 @@ function transfer_create_from_paths(array $files, ?string $password, ?int $max_d
 
     $meta = [
         'token'          => $token,
+        'short_code'     => $short_code,
         'files'          => $stored_files,
         'password_hash'  => ($password !== null && $password !== '')
             ? password_hash($password, PASSWORD_BCRYPT, ['cost' => 12])
@@ -256,7 +258,7 @@ function transfer_create_from_paths(array $files, ?string $password, ?int $max_d
     }
     chmod($meta_path, 0600);
 
-    return ['token' => $token, 'meta' => $meta];
+    return ['token' => $token, 'short_code' => $short_code, 'meta' => $meta];
 }
 
 // ── Transfer laden ────────────────────────────────────────────────────────────
@@ -528,6 +530,35 @@ function transfer_total_size(array $meta): int
 function transfer_download_url(string $token): string
 {
     return APP_URL . '/dl.php?token=' . urlencode($token);
+}
+
+function transfer_generate_short_code(): string
+{
+    $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    $code  = '';
+    for ($i = 0; $i < 8; $i++) {
+        $code .= $chars[random_int(0, 61)];
+    }
+    return $code;
+}
+
+function transfer_load_by_short_code(string $short_code): ?array
+{
+    if (!preg_match('/^[a-zA-Z0-9]{8}$/', $short_code)) return null;
+    $base = TRANSFER_BASE;
+    if (!is_dir($base)) return null;
+    foreach (scandir($base) as $dir) {
+        if (!preg_match('/^[a-f0-9]{64}$/', $dir)) continue;
+        $meta_path = $base . '/' . $dir . '/meta.json';
+        if (!is_file($meta_path)) continue;
+        $json = @file_get_contents($meta_path);
+        if (!$json) continue;
+        $meta = json_decode($json, true);
+        if (is_array($meta) && ($meta['short_code'] ?? '') === $short_code) {
+            return $meta;
+        }
+    }
+    return null;
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────────

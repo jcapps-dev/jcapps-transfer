@@ -23,8 +23,15 @@ header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin');
 
-// Token aus GET oder POST (mit Regex validieren)
-$token = $_GET['token'] ?? $_POST['token'] ?? '';
+// Short code (t=) oder langer Token
+$token = '';
+$_short = $_GET['t'] ?? '';
+if (preg_match('/^[a-zA-Z0-9]{8}$/', $_short)) {
+    $_meta_sc = transfer_load_by_short_code($_short);
+    $token = $_meta_sc['token'] ?? '';
+} else {
+    $token = $_GET['token'] ?? $_POST['token'] ?? '';
+}
 
 if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
     dl_show_page(null, 'invalid');
