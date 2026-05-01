@@ -383,13 +383,19 @@ function transfer_stream_file(array $meta): void
 
         set_time_limit(0); // before ZIP creation, not after
 
+        $zip_lock = fopen($zip_path . '.lock', 'c');
+        flock($zip_lock, LOCK_EX);
         if (!file_exists($zip_path)) {
             if (!class_exists('ZipArchive')) {
+                flock($zip_lock, LOCK_UN);
+                fclose($zip_lock);
                 http_response_code(500);
                 die('ZIP creation not possible (ZipArchive not available).');
             }
             $zip = new ZipArchive();
             if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+                flock($zip_lock, LOCK_UN);
+                fclose($zip_lock);
                 http_response_code(500);
                 die('ZIP could not be created.');
             }
@@ -402,6 +408,8 @@ function transfer_stream_file(array $meta): void
             $zip->close();
             chmod($zip_path, 0600);
         }
+        flock($zip_lock, LOCK_UN);
+        fclose($zip_lock);
 
         $site_name = preg_replace('/[^\w\-]/u', '_', settings_load()['site_name'] ?? 'Transfer');
         $zip_name  = $site_name . '_' . date('Y-m-d') . '.zip';
