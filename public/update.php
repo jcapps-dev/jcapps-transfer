@@ -10,7 +10,7 @@
  *   2. Im Browser aufrufen und Admin-Passwort eingeben
  */
 
-define('UPDATER_VERSION', '1.0.6');
+define('UPDATER_VERSION', '1.0.7');
 define('GITHUB_REPO', 'jcapps-dev/jcapps-transfer');
 define('GITHUB_API',  'https://api.github.com/repos/' . GITHUB_REPO . '/releases/latest');
 
@@ -95,6 +95,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+}
+
+if ($success) {
+    $self = __FILE__;
+    ignore_user_abort(true);
+    register_shutdown_function(function() use ($self) {
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        }
+        @unlink($self);
+    });
 }
 
 function _update_download(string $url, string $dest): bool {
@@ -263,17 +274,5 @@ function _update_rmdir(string $dir): void {
     <p class="version"><a href="https://jcapps.dev" target="_blank" rel="noopener">jcapps.dev</a> &middot; Updater <?= UPDATER_VERSION ?></p>
 </div>
 
-<?php if ($success): ?>
-<script>
-    // update.php nach Erfolg löschen
-    setTimeout(() => fetch('update.php?_cleanup=1').catch(()=>{}), 3000);
-</script>
-<?php endif; ?>
-<?php
-if ($success && ($_GET['_cleanup'] ?? '') === '1') {
-    @unlink(__FILE__);
-    exit;
-}
-?>
 </body>
 </html>
