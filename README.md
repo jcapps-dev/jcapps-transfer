@@ -7,10 +7,12 @@ Self-hosted file sharing. Upload a file, get a link, the recipient downloads wit
 ## Features
 
 - **Drag & drop upload** — multiple files at once, automatically zipped
+- **Large file support** — chunked upload bypasses server limits (tested up to 5 GB)
 - **Secure download links** — 256-bit random tokens, optional password protection
 - **Auto-expiry** — links expire after a configurable number of days
 - **Download limit** — optionally lock a link after N downloads
 - **Revoke anytime** — disable any link from the admin dashboard
+- **In-app updates** — one-click update from the admin dashboard
 - **Branding** — configure your own logo, company name and footer text
 - **Privacy** — IP addresses stored as hashed values only (GDPR-friendly)
 - **No database** — flat-file storage, no MySQL required
@@ -36,7 +38,9 @@ The installer downloads the latest release and walks you through setup. Set a pa
 
 ## Updating
 
-When the admin dashboard shows an available update:
+When a new version is available, the admin dashboard shows an update banner. Click **Update now** — config, uploads and logs are fully preserved.
+
+If the in-app update is not available on your host, use the manual updater:
 
 **1.** [Download `update.php`](https://github.com/jcapps-dev/jcapps-transfer/releases/latest)
 
@@ -47,7 +51,7 @@ When the admin dashboard shows an available update:
 https://your-domain.com/update.php
 ```
 
-Config, uploads and logs are fully preserved.
+The file deletes itself after a successful update.
 
 ---
 
