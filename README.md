@@ -12,6 +12,7 @@ Self-hosted file sharing. Upload a file, get a link, the recipient downloads wit
 - **Auto-expiry** — links expire after a configurable number of days
 - **Download limit** — optionally lock a link after N downloads
 - **Revoke anytime** — disable any link from the admin dashboard
+- **Private storage** — upload files for yourself; download directly without generating a share link
 - **In-app updates** — one-click update from the admin dashboard
 - **Branding** — configure your own logo, company name and footer text
 - **Privacy** — IP addresses stored as hashed values only (GDPR-friendly)
@@ -83,7 +84,8 @@ All settings in `config.php`:
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `transfer_base_path` | Path for uploads | — |
+| `transfer_base_path` | Path for uploads (outside webroot) | — |
+| `storage_base_path` | Path for private admin storage (outside webroot) | auto |
 | `admin_password_hash` | bcrypt hash of admin password | — |
 | `max_filesize_mb` | Max file size in MB | `1024` |
 | `max_files_per_upload` | Max files per transfer | `10` |
