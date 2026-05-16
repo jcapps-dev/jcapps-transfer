@@ -11,6 +11,9 @@ return [
     // Directory for uploads — OUTSIDE the web root!
     'transfer_base_path'     => '/home/www/transfers',
 
+    // Directory for the internal admin storage — OUTSIDE the web root!
+    'storage_base_path'      => '/home/www/storage',
+
     // Bcrypt hash of the admin password (cost 12)
     'admin_password_hash'    => '$2y$12$REPLACE_WITH_ACTUAL_BCRYPT_HASH_HERE_xxxxxxxxxxxxx',
 

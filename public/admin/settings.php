@@ -119,6 +119,10 @@ $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE .
                 <span class="link-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></span>
                 <span class="link-text">New Transfer</span>
             </a>
+            <a class="sidebar-link" href="storage.php">
+                <span class="link-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
+                <span class="link-text">Storage</span>
+            </a>
         </nav>
         <div class="sidebar-footer">
             <a class="sidebar-link" href="logout.php">

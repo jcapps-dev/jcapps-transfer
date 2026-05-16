@@ -243,23 +243,27 @@ async function uploadChunked(form) {
 
     // Finalize
     var fd = new FormData();
-    fd.append('csrf_token',    csrf);
-    fd.append('session_id',    sessionId);
-    fd.append('password',      form.querySelector('[name="password"]').value);
-    fd.append('max_downloads', form.querySelector('[name="max_downloads"]').value);
-    fd.append('lifetime_days', form.querySelector('[name="lifetime_days"]').value);
+    fd.append('csrf_token', csrf);
+    fd.append('session_id', sessionId);
+    var pwEl = form.querySelector('[name="password"]');
+    if (pwEl) fd.append('password', pwEl.value);
+    var maxDlEl = form.querySelector('[name="max_downloads"]');
+    if (maxDlEl) fd.append('max_downloads', maxDlEl.value);
+    var lifetimeEl = form.querySelector('[name="lifetime_days"]');
+    if (lifetimeEl) fd.append('lifetime_days', lifetimeEl.value);
     filesMeta.forEach(function(f, idx) {
         fd.append('files[' + idx + '][file_index]',   f.file_index);
         fd.append('files[' + idx + '][name]',         f.name);
         fd.append('files[' + idx + '][total_chunks]', f.total_chunks);
     });
 
+    var finalizeUrl = form.dataset.finalizeUrl || 'upload_finalize.php';
     var resp, result;
     try {
-        resp   = await fetch('upload_finalize.php', { method: 'POST', body: fd });
+        resp   = await fetch(finalizeUrl, { method: 'POST', body: fd });
         result = await resp.json();
     } catch (e) {
-        showError('Network error finalizing transfer.');
+        showError('Network error finalizing upload.');
         submitBtn.disabled = false;
         return;
     }
@@ -267,6 +271,11 @@ async function uploadChunked(form) {
     if (!result.ok) {
         showError('Error: ' + (result.error || 'Unknown error'));
         submitBtn.disabled = false;
+        return;
+    }
+
+    if (result.redirect) {
+        window.location.href = result.redirect;
         return;
     }
 

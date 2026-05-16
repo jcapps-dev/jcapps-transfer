@@ -38,6 +38,7 @@ ini_set('error_log', $_log_dir . '/php_errors.log');
 
 // Konstanten
 define('TRANSFER_BASE',  rtrim($config['transfer_base_path'], '/'));
+define('STORAGE_DIR',    rtrim($config['storage_base_path'] ?? dirname(TRANSFER_BASE) . '/storage', '/'));
 define('LOGS_PATH',      TRANSFER_BASE . '/logs');
 define('RATELIMIT_PATH', LOGS_PATH . '/ratelimit');
 define('APP_URL',        rtrim($config['app_url'], '/'));
