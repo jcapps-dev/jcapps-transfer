@@ -31,6 +31,18 @@ foreach ($transfers as $t) {
     else $expired++;
 }
 
+// Storage usage
+$transfer_bytes = array_sum(array_map('transfer_total_size', $transfers));
+$transfer_files = array_sum(array_map(fn($t) => count($t['files']), $transfers));
+
+$storage_bytes = 0;
+$storage_files = 0;
+if (is_dir(STORAGE_DIR)) {
+    foreach (glob(STORAGE_DIR . '/*') as $p) {
+        if (is_file($p)) { $storage_bytes += filesize($p); $storage_files++; }
+    }
+}
+
 // Flash-Nachrichten
 $flash = flash_get();
 
@@ -157,6 +169,14 @@ if (is_file($_cache_file)) {
                     <div class="stat-card">
                         <div class="stat-value"><?= $expired ?></div>
                         <div class="stat-label">Expired / Limit</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value"><?= transfer_format_size($transfer_bytes) ?></div>
+                        <div class="stat-label">Transfers · <?= $transfer_files ?> <?= $transfer_files === 1 ? 'file' : 'files' ?></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value"><?= transfer_format_size($storage_bytes) ?></div>
+                        <div class="stat-label">Storage · <?= $storage_files ?> <?= $storage_files === 1 ? 'file' : 'files' ?></div>
                     </div>
                 </div>
 
