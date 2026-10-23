@@ -7,7 +7,7 @@ function auth_session_start(): void
 {
     global $config;
 
-    $session_name = $config['session_name'] ?? 'SG_FILETRANSFER';
+    $session_name = $config['session_name'] ?? 'JCAPPS_FILETRANSFER';
 
     ini_set('session.use_strict_mode', 1); // reject session IDs not issued by the server
     ini_set('session.cookie_httponly', 1);
