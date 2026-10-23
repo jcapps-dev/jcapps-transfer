@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-dark.png">
+  <img src=".github/assets/banner-light.png" alt="jcapps" width="440">
+</picture>
+
 # jcapps-transfer
 
 Self-hosted file sharing. Upload a file, get a link, the recipient downloads without an account. It started because we didn't want someone else's branding on links going to customers.
@@ -14,7 +19,9 @@ Self-hosted file sharing. Upload a file, get a link, the recipient downloads wit
 - **Revoke anytime** — disable any link from the admin dashboard
 - **Private storage** — upload files for yourself; download directly without generating a share link
 - **In-app updates** — one-click update from the admin dashboard
-- **Branding** — configure your own logo, company name and footer text
+- **Branding** — your own logo, company name, footer text, legal notice and privacy policy links
+- **Bilingual download page** — German or English, based on the recipient's browser
+- **Mobile-ready admin** — manage transfers from your phone
 - **Privacy** — IP addresses stored as hashed values only (GDPR-friendly)
 - **No database** — flat-file storage, no MySQL required
 
@@ -143,7 +150,11 @@ jcapps-transfer/
 
 ## Screenshots
 
-[jcapps.dev/screenshots.html](https://jcapps.dev/screenshots.html)
+<img src="https://jcapps.dev/assets/screenshots/transfer-dashboard.png" alt="Admin dashboard — transfers overview" width="720">
+
+<img src="https://jcapps.dev/assets/screenshots/transfer-download.png" alt="Recipient download page" width="420">
+
+All screens from install to download: [jcapps.dev/screenshots](https://jcapps.dev/screenshots)
 
 ---
 
