@@ -620,6 +620,7 @@ function settings_defaults(): array
         'company_name'  => 'Secure File Transfer',
         'footer_text'   => '',
         'impressum_url' => '',
+        'datenschutz_url' => '',
         'has_logo'      => false,
         'logo_mime'     => null,
     ];
@@ -641,14 +642,17 @@ function settings_save(array $data): bool
     $path  = TRANSFER_BASE . '/settings.json';
 
     // Only allow http(s) links (no javascript:, data: etc.)
-    $impressum = mb_substr(trim((string)($data['impressum_url'] ?? '')), 0, 500);
-    if (!preg_match('#^https?://#i', $impressum)) $impressum = '';
+    $clean_url = function (string $key) use ($data): string {
+        $url = mb_substr(trim((string)($data[$key] ?? '')), 0, 500);
+        return preg_match('#^https?://#i', $url) ? $url : '';
+    };
 
     $clean = [
         'site_name'     => mb_substr(trim((string)($data['site_name']     ?? '')), 0, 60) ?: 'Filetransfer',
         'company_name'  => mb_substr(trim((string)($data['company_name']  ?? '')), 0, 100),
         'footer_text'   => mb_substr(trim((string)($data['footer_text']   ?? '')), 0, 300),
-        'impressum_url' => $impressum,
+        'impressum_url' => $clean_url('impressum_url'),
+        'datenschutz_url' => $clean_url('datenschutz_url'),
         'has_logo'      => (bool)($data['has_logo']  ?? false),
         'logo_mime'     => isset($data['logo_mime']) ? (string)$data['logo_mime'] : null,
     ];

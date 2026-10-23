@@ -43,10 +43,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $settings['company_name']  = $_POST['company_name']  ?? '';
         $settings['footer_text']   = $_POST['footer_text']   ?? '';
         $settings['impressum_url'] = $_POST['impressum_url'] ?? '';
+        $settings['datenschutz_url'] = $_POST['datenschutz_url'] ?? '';
 
-        $_impressum = trim($settings['impressum_url']);
-        if ($_impressum !== '' && !preg_match('#^https?://#i', $_impressum)) {
-            $error = 'Legal notice URL must start with https:// or http://.';
+        foreach (['impressum_url' => 'Legal notice URL', 'datenschutz_url' => 'Privacy policy URL'] as $_key => $_label) {
+            $_url = trim($settings[$_key]);
+            if ($_url !== '' && !preg_match('#^https?://#i', $_url)) {
+                $error = $_label . ' must start with https:// or http://.';
+            }
         }
 
         // Logo-Upload (optional)
@@ -189,7 +192,7 @@ $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE .
                             <input type="text" id="company_name" name="company_name"
                                    class="form-control" maxlength="100"
                                    value="<?= htmlspecialchars($settings['company_name'], ENT_QUOTES, 'UTF-8') ?>">
-                            <div class="form-hint">Shown as the heading on the download page.</div>
+                            <div class="form-hint">Used in the text and footer of the download page (if no footer text is set).</div>
                         </div>
 
                         <div class="form-group">
@@ -198,7 +201,7 @@ $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE .
                                    class="form-control" maxlength="300"
                                    placeholder="e.g. Acme Corp · Confidential"
                                    value="<?= htmlspecialchars($settings['footer_text'], ENT_QUOTES, 'UTF-8') ?>">
-                            <div class="form-hint">Appears in the footer of the download page. Leave empty = no footer.</div>
+                            <div class="form-hint">Appears in the footer of the download page. Leave empty = “© year company name”.</div>
                         </div>
 
                         <div class="form-group">
@@ -207,6 +210,14 @@ $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE .
                                    maxlength="500" placeholder="https://example.com/legal"
                                    value="<?= htmlspecialchars($settings['impressum_url'], ENT_QUOTES, 'UTF-8') ?>">
                             <div class="form-hint">Shown as a small link in the footer of the login and download pages. Leave empty = no link.</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="datenschutz_url">Privacy policy URL</label>
+                            <input type="url" class="form-control" id="datenschutz_url" name="datenschutz_url"
+                                   maxlength="500" placeholder="https://example.com/privacy"
+                                   value="<?= htmlspecialchars($settings['datenschutz_url'], ENT_QUOTES, 'UTF-8') ?>">
+                            <div class="form-hint">Link to the privacy policy in the footer of the login and download page. Leave empty = no link.</div>
                         </div>
 
                         <div class="form-group">

@@ -106,16 +106,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 </div>
 
-<?php if ($settings['footer_text'] !== '' || $settings['impressum_url'] !== ''): ?>
-<div class="login-footer">
-    <?php if ($settings['footer_text'] !== ''): ?>
-        <?= htmlspecialchars($settings['footer_text'], ENT_QUOTES, 'UTF-8') ?>
-    <?php endif; ?>
-    <?php if ($settings['impressum_url'] !== ''): ?>
-        <?php if ($settings['footer_text'] !== ''): ?> · <?php endif; ?>
-        <a href="<?= htmlspecialchars($settings['impressum_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer">Legal notice</a>
-    <?php endif; ?>
-</div>
+<?php
+$_footer_parts = [];
+if ($settings['footer_text'] !== '') {
+    $_footer_parts[] = htmlspecialchars($settings['footer_text'], ENT_QUOTES, 'UTF-8');
+}
+foreach (['impressum_url' => 'Legal notice', 'datenschutz_url' => 'Privacy policy'] as $_key => $_label) {
+    if ($settings[$_key] !== '') {
+        $_footer_parts[] = '<a href="' . htmlspecialchars($settings[$_key], ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener noreferrer">' . $_label . '</a>';
+    }
+}
+?>
+<?php if ($_footer_parts): ?>
+<div class="login-footer"><?= implode(' · ', $_footer_parts) ?></div>
 <?php endif; ?>
 
 </body>

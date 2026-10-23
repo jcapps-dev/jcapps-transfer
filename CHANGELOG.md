@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.4] — 2026-10-23
+
+### Download page redesign
+
+- Calm, corporate layout: header with logo, content without floating card, full-width footer with legal links
+- Removed duplicate company name under the logo and the "Secure transfer" line
+- File type badge, name and size for every file; "Available until" and remaining downloads as separate facts
+- **Bilingual (DE/EN)** based on the browser's Accept-Language (German if preferred, otherwise English) incl. date and number formats
+- Error states (expired, revoked, limit reached) in the same layout with a hint to contact the sender
+- New setting **Privacy policy URL**; legal links shown on download and login page
+- Empty footer text now defaults to "© year company name"
+
 ## [1.3.3] — 2026-10-23
 
 ### Bug fix
