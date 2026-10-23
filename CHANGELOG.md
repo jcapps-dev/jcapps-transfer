@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.7] — 2026-10-23
+
+### Improvement
+
+- Download page language: the browser's language list is now checked in order of preference and the first supported language (German or English) wins — e.g. "Chinese, German, English" now shows German instead of English. Falls back to English if neither is listed.
+
 ## [1.3.6] — 2026-10-23
 
 ### Maintenance

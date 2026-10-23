@@ -1,1 +1,1 @@
-<?php define('APP_VERSION', '1.3.6');
+<?php define('APP_VERSION', '1.3.7');

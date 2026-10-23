@@ -136,26 +136,32 @@ dl_show_page($meta, $status);
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Language from Accept-Language: German if German is preferred,
- * otherwise English (also when no header is sent).
+ * Language from Accept-Language: the first supported language (German or
+ * English) in the browser's order of preference. If neither is listed,
+ * or no header is sent: English.
  */
 function dl_lang(): string
 {
-    $best   = '';
-    $best_q = -1.0;
-    foreach (explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '') as $part) {
+    $langs = [];
+    foreach (explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '') as $i => $part) {
         $bits = explode(';', trim($part));
         $tag  = strtolower(trim($bits[0]));
         $q    = 1.0;
         if (isset($bits[1]) && preg_match('/q=([0-9.]+)/', $bits[1], $m)) {
             $q = (float)$m[1];
         }
-        if ($tag !== '' && $q > $best_q) {
-            $best   = $tag;
-            $best_q = $q;
+        if ($tag !== '' && $q > 0) {
+            $langs[] = [$tag, $q, $i];
         }
     }
-    return str_starts_with($best, 'de') ? 'de' : 'en';
+    if (!$langs) return 'en';
+    // Sort by weight, keep the browser's order on ties
+    usort($langs, fn($a, $b) => [$b[1], $a[2]] <=> [$a[1], $b[2]]);
+    foreach ($langs as [$tag]) {
+        if (str_starts_with($tag, 'de')) return 'de';
+        if (str_starts_with($tag, 'en')) return 'en';
+    }
+    return 'en';
 }
 
 function dl_texts(string $lang): array
