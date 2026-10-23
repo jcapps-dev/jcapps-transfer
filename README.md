@@ -5,7 +5,7 @@
 
 # jcapps-transfer
 
-Self-hosted file sharing. Upload a file, get a link, the recipient downloads without an account. It started because we didn't want someone else's branding on links going to customers.
+Self-hosted file sharing. Upload a file, get a link, the recipient downloads without an account. It started because I didn't want someone else's branding on links going to customers.
 
 ---
 
