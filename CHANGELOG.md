@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.8] — 2026-10-23
+
+### Design
+
+- Login page uses the same calm layout as the download page: header with logo, simple form, footer with © line and legal links (duplicate company name and "Secure connection" line removed)
+- Storage table now uses the same table style as the dashboard
+- "Copy password" and "Delete logo" are secondary/outlined buttons — strong red is reserved for confirmations
+
 ## [1.3.7] — 2026-10-23
 
 ### Improvement

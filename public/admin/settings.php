@@ -240,7 +240,7 @@ $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE .
                         <div style="display:flex; gap:var(--spacing-sm); align-items:center;">
                             <button type="submit" class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save</button>
                             <?php if ($settings['has_logo']): ?>
-                            <button type="button" class="btn btn-danger"
+                            <button type="button" class="btn btn-outline-danger"
                                     data-open-modal="logo-delete-modal"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete logo</button>
                             <?php endif; ?>
                         </div>

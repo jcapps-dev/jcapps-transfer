@@ -136,45 +136,29 @@ function storage_format_size(int $bytes): string {
                         No files in storage yet.
                     </div>
                     <?php else: ?>
-                    <table style="width:100%; border-collapse:collapse;">
+                    <div class="table-container">
+                    <table>
                         <thead>
-                            <tr style="border-bottom: 1px solid var(--color-gray-200);">
-                                <th style="text-align:left; padding: var(--spacing-sm) var(--spacing-md); font-size:.8125rem; color:var(--color-gray-500); font-weight:600;">Filename</th>
-                                <th style="text-align:right; padding: var(--spacing-sm) var(--spacing-md); font-size:.8125rem; color:var(--color-gray-500); font-weight:600; width:90px;" class="col-optional">Size</th>
-                                <th style="text-align:left; padding: var(--spacing-sm) var(--spacing-md); font-size:.8125rem; color:var(--color-gray-500); font-weight:600; width:160px;" class="col-optional">Uploaded</th>
+                            <tr>
+                                <th>Filename</th>
+                                <th class="col-optional">Size</th>
+                                <th class="col-optional">Uploaded</th>
                                 <th class="col-actions"></th>
                             </tr>
                         </thead>
                         <tbody>
                         <?php foreach ($files as $f): ?>
-                            <tr style="border-bottom: 1px solid var(--color-gray-100);">
-                                <td style="padding: var(--spacing-sm) var(--spacing-md);">
-                                    <span style="display:inline-flex; align-items:center; gap:6px;">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; color:var(--color-gray-400);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                        <?= htmlspecialchars($f['name'], ENT_QUOTES, 'UTF-8') ?>
-                                    </span>
-                                </td>
-                                <td class="col-optional" style="padding: var(--spacing-sm) var(--spacing-md); text-align:right; font-size:.875rem; color:var(--color-gray-500);">
-                                    <?= storage_format_size($f['size']) ?>
-                                </td>
-                                <td class="col-optional" style="padding: var(--spacing-sm) var(--spacing-md); font-size:.875rem; color:var(--color-gray-500);">
-                                    <?= date('Y-m-d H:i', $f['mtime']) ?>
-                                </td>
-                                <td class="col-actions" style="padding: var(--spacing-sm) var(--spacing-md);">
-                                    <div class="td-actions" style="display:flex; gap:6px;">
-                                        <a href="storage_download.php?file=<?= urlencode($f['name']) ?>"
-                                           class="btn btn-sm btn-ghost" title="Download" style="flex:1; justify-content:center;">
-                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px; flex-shrink:0;"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
-                                            <span class="btn-label">Download</span>
-                                        </a>
-                                        <form method="post" action="storage_delete.php" style="flex:1; display:flex;">
+                            <tr>
+                                <td><?= htmlspecialchars($f['name'], ENT_QUOTES, 'UTF-8') ?></td>
+                                <td class="col-optional" style="font-family:'JetBrains Mono',monospace; font-size:0.8125rem;"><?= storage_format_size($f['size']) ?></td>
+                                <td class="col-optional" style="font-size:0.8125rem;"><?= date('Y-m-d H:i', $f['mtime']) ?></td>
+                                <td class="col-actions">
+                                    <div class="td-actions">
+                                        <a href="storage_download.php?file=<?= urlencode($f['name']) ?>" class="btn btn-sm btn-ghost" title="Download"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg><span class="btn-label">Download</span></a>
+                                        <form method="post" action="storage_delete.php" style="display:inline;">
                                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
                                             <input type="hidden" name="file" value="<?= htmlspecialchars($f['name'], ENT_QUOTES, 'UTF-8') ?>">
-                                            <button type="submit" class="btn btn-sm btn-danger" style="flex:1; justify-content:center;"
-                                                    title="Delete" data-confirm="Permanently delete this file?">
-                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px; flex-shrink:0;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                                                <span class="btn-label">Delete</span>
-                                            </button>
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Delete" data-confirm="Permanently delete this file?"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg><span class="btn-label">Delete</span></button>
                                         </form>
                                     </div>
                                 </td>
@@ -182,6 +166,7 @@ function storage_format_size(int $bytes): string {
                         <?php endforeach; ?>
                         </tbody>
                     </table>
+                    </div>
                     <?php endif; ?>
                 </div>
 

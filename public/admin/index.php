@@ -18,6 +18,8 @@ if (!empty($_SESSION['admin_logged_in'])) {
 
 $error    = '';
 $settings = settings_load();
+// Company name for header and footer (same as on the download page)
+$_company = $settings['company_name'] !== '' ? $settings['company_name'] : $settings['site_name'];
 
 // Logo als Base64-Data-URI vorbereiten (keine öffentliche Logo-URL)
 $_logo_b64  = null;
@@ -62,64 +64,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
-    <title>Login – <?= htmlspecialchars($settings['company_name'], ENT_QUOTES, 'UTF-8') ?></title>
+    <title>Sign in – <?= htmlspecialchars($_company, ENT_QUOTES, 'UTF-8') ?></title>
     <link rel="stylesheet" href="../assets/style.css">
 </head>
-<body class="login-page">
+<body class="dl-page">
 
-<div class="login-card">
-    <div class="login-logo">
+<header class="dl-header">
+    <div class="dl-shell">
         <?php if ($_logo_b64 !== null): ?>
-        <div class="login-company-logo">
-            <div style="width:200px;height:72px;background-image:url('data:<?= htmlspecialchars($_logo_mime, ENT_QUOTES, 'UTF-8') ?>;base64,<?= $_logo_b64 ?>');background-size:contain;background-repeat:no-repeat;background-position:center;"></div>
-        </div>
-        <div class="login-logo-sub"><?= htmlspecialchars($settings['company_name'], ENT_QUOTES, 'UTF-8') ?></div>
+        <img class="dl-header-logo" src="data:<?= htmlspecialchars($_logo_mime, ENT_QUOTES, 'UTF-8') ?>;base64,<?= $_logo_b64 ?>" alt="<?= htmlspecialchars($_company, ENT_QUOTES, 'UTF-8') ?>">
         <?php else: ?>
-        <div class="login-product">
-            <span class="login-logo-icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-navy)" stroke-width="1.5">
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                    <line x1="12" y1="22.08" x2="12" y2="12"/>
-                </svg>
-            </span>
-            <div class="login-logo-text"><?= htmlspecialchars($settings['company_name'], ENT_QUOTES, 'UTF-8') ?></div>
-        </div>
+        <span class="dl-header-name"><?= htmlspecialchars($_company, ENT_QUOTES, 'UTF-8') ?></span>
         <?php endif; ?>
     </div>
-    <div class="login-security-hint">Secure connection</div>
+</header>
 
-    <?php if ($error): ?>
-    <div class="msg msg-error"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
-    <?php endif; ?>
+<main class="dl-main">
+    <div class="dl-shell">
+        <h1 class="dl-title">Sign in</h1>
+        <p class="dl-intro">Please sign in with the admin password.</p>
 
-    <form method="POST" action="">
-        <?= csrf_field() ?>
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password"
-                   class="form-control"
-                   placeholder="Admin password"
-                   autofocus required autocomplete="current-password">
-        </div>
-        <button type="submit" class="btn">Sign in</button>
-    </form>
-</div>
+        <form method="POST" action="" class="login-form">
+            <?= csrf_field() ?>
+
+            <?php if ($error): ?>
+            <div class="dl-alert"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
+            <?php endif; ?>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password"
+                       class="form-control"
+                       autofocus required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn dl-btn">Sign in</button>
+        </form>
+    </div>
+</main>
 
 <?php
-$_footer_parts = [];
-if ($settings['footer_text'] !== '') {
-    $_footer_parts[] = htmlspecialchars($settings['footer_text'], ENT_QUOTES, 'UTF-8');
-}
-foreach (['impressum_url' => 'Legal notice', 'datenschutz_url' => 'Privacy policy'] as $_key => $_label) {
-    if ($settings[$_key] !== '') {
-        $_footer_parts[] = '<a href="' . htmlspecialchars($settings[$_key], ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener noreferrer">' . $_label . '</a>';
-    }
-}
+$_footer_text = $settings['footer_text'] !== '' ? $settings['footer_text'] : '© ' . date('Y') . ' ' . $_company;
+$_legal = array_filter([
+    'Legal notice'   => $settings['impressum_url'] ?? '',
+    'Privacy policy' => $settings['datenschutz_url'] ?? '',
+]);
 ?>
-<?php if ($_footer_parts): ?>
-<div class="login-footer"><?= implode(' · ', $_footer_parts) ?></div>
-<?php endif; ?>
+<footer class="dl-footer">
+    <div class="dl-shell">
+        <span><?= htmlspecialchars($_footer_text, ENT_QUOTES, 'UTF-8') ?></span>
+        <?php if ($_legal): ?>
+        <nav class="dl-legal">
+            <?php foreach ($_legal as $_label => $_url): ?>
+            <a href="<?= htmlspecialchars($_url, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer"><?= htmlspecialchars($_label, ENT_QUOTES, 'UTF-8') ?></a>
+            <?php endforeach; ?>
+        </nav>
+        <?php endif; ?>
+    </div>
+</footer>
 
 </body>
 </html>
