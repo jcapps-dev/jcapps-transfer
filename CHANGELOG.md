@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.6] — 2026-10-23
+
+### Maintenance
+
+- Default admin session cookie name is now `JCAPPS_FILETRANSFER` (only applies to manual installs without `session_name` in the config — setup always writes its own)
+- README: requirements (PHP extensions, Apache 2.4), config table (`rate_limit_salt`, `session_name`, per-transfer size limit), config location outside the webroot, storage directory, cleanup scope and an extended security overview
+- README: jcapps banner and inline screenshots
+
 ## [1.3.5] — 2026-10-23
 
 ### Bug fix
