@@ -169,6 +169,21 @@ body {
     font-weight: 600;
 }
 
+/* Logout als POST-Formular: Button wie Sidebar-Link darstellen */
+.sidebar-logout-form {
+    margin: 0;
+}
+
+button.sidebar-link {
+    width: 100%;
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
 .link-icon {
     flex-shrink: 0;
     width: 22px;

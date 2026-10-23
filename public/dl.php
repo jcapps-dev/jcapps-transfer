@@ -27,8 +27,18 @@ header('Referrer-Policy: strict-origin');
 $token = '';
 $_short = $_GET['t'] ?? '';
 if (preg_match('/^[a-zA-Z0-9]{8}$/', $_short)) {
+    // Rate limit against short code guessing: max 30 misses per minute
+    $_sc_ip = log_ip_hash(log_get_ip());
+    if (ratelimit_is_blocked('sc', $_sc_ip, 30, 60)) {
+        http_response_code(429);
+        dl_show_page(null, 'ratelimit');
+        exit;
+    }
     $_meta_sc = transfer_load_by_short_code($_short);
     $token = $_meta_sc['token'] ?? '';
+    if ($token === '') {
+        ratelimit_increment('sc', $_sc_ip, 60);
+    }
 } else {
     $token = $_GET['token'] ?? $_POST['token'] ?? '';
 }
@@ -87,9 +97,18 @@ if ($method === 'POST') {
         }
     }
 
-    // Download durchführen
+    // Claim download (validity + counter atomically, safe against parallel requests)
     ratelimit_increment('dl', $ip_hash, 60);
-    transfer_increment_download($token);
+    $claimed = transfer_claim_download($token);
+    if (!$claimed) {
+        $meta   = transfer_load($token);
+        $status = ($meta && !transfer_is_valid($meta)) ? transfer_get_status($meta) : 'invalid';
+        log_event('dl_invalid_transfer', ['pfx' => substr($token, 0, 8), 'status' => $status]);
+        http_response_code(410);
+        dl_show_page($meta, $status);
+        exit;
+    }
+    $meta = $claimed;
     log_event('dl_success', ['pfx' => substr($token, 0, 8), 'files' => count($meta['files'])]);
 
     // Output-Buffer leeren, dann streamen

@@ -318,25 +318,70 @@ function transfer_get_status(array $meta): string
     return 'active';
 }
 
-// ── Download-Zähler erhöhen ───────────────────────────────────────────────────
+// ── Lock and atomically write metadata ───────────────────────────────────────
 
-function transfer_increment_download(string $token): bool
+/**
+ * Acquire an exclusive lock on a transfer's metadata.
+ * The lock file is kept — deleting it would let waiting processes
+ * acquire a lock on an orphaned file.
+ *
+ * @return resource|false
+ */
+function transfer_lock(string $token)
 {
-    $meta_path = TRANSFER_BASE . '/' . $token . '/meta.json';
-    $lock_path = $meta_path . '.lock';
-    $lock = fopen($lock_path, 'c');
+    if (!preg_match('/^[a-f0-9]{64}$/', $token)) return false;
+    $dir = TRANSFER_BASE . '/' . $token;
+    if (!is_dir($dir)) return false;
+    $lock = fopen($dir . '/meta.lock', 'c');
     if (!$lock) return false;
     flock($lock, LOCK_EX);
+    return $lock;
+}
+
+function transfer_unlock($lock): void
+{
+    flock($lock, LOCK_UN);
+    fclose($lock);
+}
+
+/**
+ * Write meta.json atomically (temp file + rename) so concurrent
+ * readers never see an empty or half-written file.
+ */
+function transfer_write_meta(string $token, array $meta): bool
+{
+    $meta_path = TRANSFER_BASE . '/' . $token . '/meta.json';
+    $tmp_path  = $meta_path . '.' . bin2hex(random_bytes(4)) . '.tmp';
+    if (file_put_contents($tmp_path, json_encode($meta, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) === false) {
+        @unlink($tmp_path);
+        return false;
+    }
+    chmod($tmp_path, 0600);
+    if (!rename($tmp_path, $meta_path)) {
+        @unlink($tmp_path);
+        return false;
+    }
+    return true;
+}
+
+// ── Claim download ────────────────────────────────────────────────────────────
+
+/**
+ * Check validity and increment the download counter in one step (under lock),
+ * so parallel requests cannot exceed the download limit.
+ * Returns the updated metadata, or null if the transfer is not (or no longer) valid.
+ */
+function transfer_claim_download(string $token): ?array
+{
+    $lock = transfer_lock($token);
+    if (!$lock) return null;
     try {
-        $raw = file_get_contents($meta_path);
-        $meta = $raw ? json_decode($raw, true) : null;
-        if (!$meta) return false;
+        $meta = transfer_load($token);
+        if (!$meta || !transfer_is_valid($meta)) return null;
         $meta['download_count'] = ($meta['download_count'] ?? 0) + 1;
-        return file_put_contents($meta_path, json_encode($meta, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) !== false;
+        return transfer_write_meta($token, $meta) ? $meta : null;
     } finally {
-        flock($lock, LOCK_UN);
-        fclose($lock);
-        @unlink($lock_path);
+        transfer_unlock($lock);
     }
 }
 
@@ -465,14 +510,19 @@ function transfer_get_all(): array
 
 function transfer_revoke(string $token): bool
 {
-    $meta = transfer_load($token);
-    if (!$meta) return false;
+    $lock = transfer_lock($token);
+    if (!$lock) return false;
+    try {
+        $meta = transfer_load($token);
+        if (!$meta) return false;
 
-    $meta['revoked']    = true;
-    $meta['revoked_at'] = (new DateTimeImmutable())->format('c');
+        $meta['revoked']    = true;
+        $meta['revoked_at'] = (new DateTimeImmutable())->format('c');
 
-    $meta_path = TRANSFER_BASE . '/' . $token . '/meta.json';
-    return file_put_contents($meta_path, json_encode($meta, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX) !== false;
+        return transfer_write_meta($token, $meta);
+    } finally {
+        transfer_unlock($lock);
+    }
 }
 
 // ── Transfer löschen ─────────────────────────────────────────────────────────
@@ -589,11 +639,16 @@ function settings_load(): array
 function settings_save(array $data): bool
 {
     $path  = TRANSFER_BASE . '/settings.json';
+
+    // Only allow http(s) links (no javascript:, data: etc.)
+    $impressum = mb_substr(trim((string)($data['impressum_url'] ?? '')), 0, 500);
+    if (!preg_match('#^https?://#i', $impressum)) $impressum = '';
+
     $clean = [
         'site_name'     => mb_substr(trim((string)($data['site_name']     ?? '')), 0, 60) ?: 'Filetransfer',
         'company_name'  => mb_substr(trim((string)($data['company_name']  ?? '')), 0, 100),
         'footer_text'   => mb_substr(trim((string)($data['footer_text']   ?? '')), 0, 300),
-        'impressum_url' => mb_substr(trim((string)($data['impressum_url'] ?? '')), 0, 500),
+        'impressum_url' => $impressum,
         'has_logo'      => (bool)($data['has_logo']  ?? false),
         'logo_mime'     => isset($data['logo_mime']) ? (string)$data['logo_mime'] : null,
     ];

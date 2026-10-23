@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.2] — 2026-10-23
+
+### Security hardening
+
+- Download limit is now enforced atomically (validity check + counter increment under one lock) — parallel requests can no longer exceed `max_downloads`
+- `meta.json` is written atomically (temp file + `rename()`); persistent `meta.lock` replaces the self-deleting lock file
+- Revoking a transfer uses the same lock
+- Rate limit for short-link lookups (`/dl/XXXXXXXX`): max. 30 misses per minute and IP
+- `session.use_strict_mode` enabled
+- Logout requires POST + CSRF token (sidebar button instead of link)
+- Legal notice URL accepts only `http://` / `https://`
+
 ## [1.1.1] — 2026-04-18
 
 ### Bug fix

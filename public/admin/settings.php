@@ -44,9 +44,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $settings['footer_text']   = $_POST['footer_text']   ?? '';
         $settings['impressum_url'] = $_POST['impressum_url'] ?? '';
 
+        $_impressum = trim($settings['impressum_url']);
+        if ($_impressum !== '' && !preg_match('#^https?://#i', $_impressum)) {
+            $error = 'Legal notice URL must start with https:// or http://.';
+        }
+
         // Logo-Upload (optional)
         $upload = $_FILES['logo'] ?? null;
-        if ($upload && $upload['error'] === UPLOAD_ERR_OK) {
+        if ($error) {
+            // Validation error — do not accept logo
+        } elseif ($upload && $upload['error'] === UPLOAD_ERR_OK) {
 
             $allowed_mimes = [
                 'image/png', 'image/jpeg', 'image/gif',
@@ -125,10 +132,13 @@ $logo_version = is_file(TRANSFER_BASE . '/logo.dat') ? filemtime(TRANSFER_BASE .
             </a>
         </nav>
         <div class="sidebar-footer">
-            <a class="sidebar-link" href="logout.php">
-                <span class="link-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
-                <span class="link-text">Log out</span>
-            </a>
+            <form method="POST" action="logout.php" class="sidebar-logout-form">
+                <?= csrf_field() ?>
+                <button type="submit" class="sidebar-link">
+                    <span class="link-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+                    <span class="link-text">Log out</span>
+                </button>
+            </form>
             <a class="sidebar-link active" href="settings.php">
                 <span class="link-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
                 <span class="link-text">Settings</span>
