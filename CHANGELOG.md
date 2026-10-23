@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.10] — 2026-10-23
+
+### Feature
+
+- **Resumable downloads:** after the password check, recipients are redirected to a time-limited (6 h), HMAC-signed download link that supports HTTP Range requests. Interrupted downloads of large files continue where they stopped; download managers can fetch in parallel segments. Resuming does not count as an additional download, so a link limited to one download stays usable after an interruption.
+- ETag / Last-Modified headers so browsers can resume; HEAD support for download managers.
+
 ## [1.3.9] — 2026-10-23
 
 ### Design

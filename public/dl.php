@@ -12,7 +12,8 @@ require_once dirname(__DIR__) . '/functions/bootstrap.php';
 
 // Nur GET und POST erlaubt
 $method = $_SERVER['REQUEST_METHOD'];
-if (!in_array($method, ['GET', 'POST'], true)) {
+$_is_head_ticket = $method === 'HEAD' && isset($_GET['d']); // download managers query the size via HEAD
+if (!in_array($method, ['GET', 'POST'], true) && !$_is_head_ticket) {
     http_response_code(405);
     header('Allow: GET, POST');
     exit;
@@ -22,6 +23,30 @@ if (!in_array($method, ['GET', 'POST'], true)) {
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin');
+
+// ── Signed download link: streams here, interruptions can be resumed ──
+if (isset($_GET['d'])) {
+    $_tk    = (string)$_GET['d'];
+    $_check = transfer_ticket_check($_tk, (string)($_GET['e'] ?? ''), (string)($_GET['s'] ?? ''));
+    if ($_check !== 'ok') {
+        if ($_check === 'invalid') ratelimit_increment('dl', log_ip_hash(log_get_ip()), 60);
+        http_response_code($_check === 'expired' ? 410 : 403);
+        dl_show_page(null, $_check === 'expired' ? 'ticket_expired' : 'invalid');
+        exit;
+    }
+    $meta   = transfer_load($_tk);
+    $status = $meta ? transfer_get_status($meta) : 'invalid';
+    // The download was already counted when the link was issued — a limit
+    // reached by that does not block resuming
+    if (!$meta || in_array($status, ['revoked', 'expired'], true)) {
+        http_response_code(410);
+        dl_show_page($meta, $meta ? $status : 'invalid');
+        exit;
+    }
+    if (ob_get_level() > 0) ob_end_clean();
+    transfer_stream_file($meta);
+    exit;
+}
 
 // Short code (t=) oder langer Token
 $token = '';
@@ -111,7 +136,12 @@ if ($method === 'POST') {
     $meta = $claimed;
     log_event('dl_success', ['pfx' => substr($token, 0, 8), 'files' => count($meta['files'])]);
 
-    // Output-Buffer leeren, dann streamen
+    // Continue to the signed download link (resumable); stream directly without a secret
+    $ticket = transfer_ticket_url($token);
+    if ($ticket !== null) {
+        header('Location: ' . $ticket, true, 303);
+        exit;
+    }
     if (ob_get_level() > 0) ob_end_clean();
     transfer_stream_file($meta);
     exit;
@@ -196,6 +226,7 @@ function dl_texts(string $lang): array
                 'expired'      => ['Link abgelaufen', 'Dieser Download-Link ist nicht mehr gültig.'],
                 'maxdownloads' => ['Download-Limit erreicht', 'Die maximale Anzahl an Downloads für diesen Link wurde erreicht.'],
                 'invalid'      => ['Link ungültig', 'Dieser Download-Link existiert nicht oder ist unvollständig.'],
+                'ticket_expired' => ['Download-Sitzung abgelaufen', 'Bitte öffnen Sie den ursprünglichen Link erneut, um den Download neu zu starten.'],
             ],
         ],
         'en' => [
@@ -227,6 +258,7 @@ function dl_texts(string $lang): array
                 'expired'      => ['Link expired', 'This download link is no longer valid.'],
                 'maxdownloads' => ['Download limit reached', 'The maximum number of downloads for this link has been reached.'],
                 'invalid'      => ['Invalid link', 'This download link does not exist or is incomplete.'],
+                'ticket_expired' => ['Download session expired', 'Please open the original link again to restart the download.'],
             ],
         ],
     ];

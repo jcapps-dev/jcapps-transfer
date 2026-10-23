@@ -385,19 +385,21 @@ function transfer_claim_download(string $token): ?array
     }
 }
 
-// ── Datei streamen ────────────────────────────────────────────────────────────
+// ── Stream file ────────────────────────────────────────────────────────────
 
 function transfer_stream_file(array $meta): void
 {
     $token = $meta['token'];
     $files = $meta['files'];
 
+    set_time_limit(0); // before ZIP creation, not after
+
     if (count($files) === 1) {
-        // Einzelne Datei direkt streamen
+        // Stream a single file directly
         $f    = $files[0];
         $path = TRANSFER_BASE . '/' . $token . '/files/' . $f['stored_name'];
 
-        // Path-Traversal-Schutz
+        // Path traversal protection
         $real = realpath($path);
         $base = realpath(TRANSFER_BASE . '/' . $token . '/files');
         if (!$real || !$base || !str_starts_with($real, $base . '/')) {
@@ -405,79 +407,144 @@ function transfer_stream_file(array $meta): void
             die('Invalid file path.');
         }
 
-        $safe_name = rawurlencode($f['original_name']);
-        header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="' . addslashes($f['original_name']) . '"; filename*=UTF-8\'\'' . $safe_name);
-        header('Content-Length: ' . $f['size']);
-        header('Cache-Control: no-cache, no-store, must-revalidate');
-        header('Pragma: no-cache');
-        header('X-Content-Type-Options: nosniff');
-
-        set_time_limit(0);
-        $fp = fopen($path, 'rb');
-        if (!$fp) { http_response_code(500); die('File could not be opened.'); }
-
-        while (!feof($fp)) {
-            echo fread($fp, 65536);
-            if (ob_get_level() > 0) ob_flush();
-            flush();
-        }
-        fclose($fp);
-
-    } else {
-        // Mehrere Dateien → ZIP erstellen (gecacht im Transfer-Verzeichnis)
-        $zip_path = TRANSFER_BASE . '/' . $token . '/_download.zip';
-
-        set_time_limit(0); // before ZIP creation, not after
-
-        $zip_lock = fopen($zip_path . '.lock', 'c');
-        flock($zip_lock, LOCK_EX);
-        if (!file_exists($zip_path)) {
-            if (!class_exists('ZipArchive')) {
-                flock($zip_lock, LOCK_UN);
-                fclose($zip_lock);
-                http_response_code(500);
-                die('ZIP creation not possible (ZipArchive not available).');
-            }
-            $zip = new ZipArchive();
-            if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-                flock($zip_lock, LOCK_UN);
-                fclose($zip_lock);
-                http_response_code(500);
-                die('ZIP could not be created.');
-            }
-            foreach ($files as $f) {
-                $src = TRANSFER_BASE . '/' . $token . '/files/' . $f['stored_name'];
-                if (is_file($src)) {
-                    $zip->addFile($src, basename($f['original_name']));
-                }
-            }
-            $zip->close();
-            chmod($zip_path, 0600);
-        }
-        flock($zip_lock, LOCK_UN);
-        fclose($zip_lock);
-
-        $site_name = preg_replace('/[^\w\-]/u', '_', settings_load()['site_name'] ?? 'Transfer');
-        $zip_name  = $site_name . '_' . date('Y-m-d') . '.zip';
-        $zip_size = filesize($zip_path);
-
-        header('Content-Type: application/zip');
-        header('Content-Disposition: attachment; filename="' . $zip_name . '"');
-        header('Content-Length: ' . $zip_size);
-        header('Cache-Control: no-cache, no-store, must-revalidate');
-        header('Pragma: no-cache');
-
-        $fp = fopen($zip_path, 'rb');
-        if (!$fp) { http_response_code(500); die('ZIP could not be opened.'); }
-
-        while (!feof($fp)) {
-            echo fread($fp, 65536);
-            if (ob_get_level() > 0) ob_flush();
-            flush();
-        }
-        fclose($fp);
+        $disposition = 'attachment; filename="' . addslashes($f['original_name']) . '"; filename*=UTF-8\'\'' . rawurlencode($f['original_name']);
+        transfer_send_range($real, 'application/octet-stream', $disposition);
+        return;
     }
+
+    // Multiple files → create ZIP (cached in the transfer directory)
+    $zip_path = TRANSFER_BASE . '/' . $token . '/_download.zip';
+
+    $zip_lock = fopen($zip_path . '.lock', 'c');
+    flock($zip_lock, LOCK_EX);
+    if (!file_exists($zip_path)) {
+        if (!class_exists('ZipArchive')) {
+            flock($zip_lock, LOCK_UN);
+            fclose($zip_lock);
+            http_response_code(500);
+            die('ZIP creation not possible (ZipArchive not available).');
+        }
+        $zip = new ZipArchive();
+        if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            flock($zip_lock, LOCK_UN);
+            fclose($zip_lock);
+            http_response_code(500);
+            die('ZIP could not be created.');
+        }
+        foreach ($files as $f) {
+            $src = TRANSFER_BASE . '/' . $token . '/files/' . $f['stored_name'];
+            if (is_file($src)) {
+                $zip->addFile($src, basename($f['original_name']));
+            }
+        }
+        $zip->close();
+        chmod($zip_path, 0600);
+    }
+    flock($zip_lock, LOCK_UN);
+    fclose($zip_lock);
+
+    $site_name = preg_replace('/[^\w\-]/u', '_', settings_load()['site_name'] ?? 'Transfer');
+    $zip_name  = $site_name . '_' . date('Y-m-d', filemtime($zip_path)) . '.zip';
+    transfer_send_range($zip_path, 'application/zip', 'attachment; filename="' . $zip_name . '"');
+}
+
+/**
+ * Send a file with support for a single byte range (HTTP Range) so that
+ * interrupted downloads can be resumed. Browsers need ETag and
+ * Last-Modified to request a resume.
+ */
+function transfer_send_range(string $path, string $content_type, string $disposition): void
+{
+    $size  = filesize($path);
+    $mtime = filemtime($path);
+    $etag  = '"' . md5($path . '|' . $size . '|' . $mtime) . '"';
+    $start = 0;
+    $end   = $size - 1;
+    $partial = false;
+
+    // If-Range: only send a partial range if the file has not changed
+    $if_range = $_SERVER['HTTP_IF_RANGE'] ?? '';
+    $range_ok = $if_range === '' || $if_range === $etag || strtotime($if_range) === $mtime;
+
+    if ($range_ok && preg_match('/^bytes=(\d*)-(\d*)$/', trim($_SERVER['HTTP_RANGE'] ?? ''), $m) && ($m[1] !== '' || $m[2] !== '')) {
+        if ($m[1] === '') {
+            $start = max(0, $size - (int)$m[2]); // bytes=-500 → the last 500 bytes
+        } else {
+            $start = (int)$m[1];
+            if ($m[2] !== '') $end = min((int)$m[2], $size - 1);
+        }
+        if ($start > $end || $start >= $size) {
+            http_response_code(416);
+            header('Content-Range: bytes */' . $size);
+            exit;
+        }
+        $partial = true;
+    }
+
+    $fp = fopen($path, 'rb');
+    if (!$fp) { http_response_code(500); die('File could not be opened.'); }
+
+    header('Content-Type: ' . $content_type);
+    header('Content-Disposition: ' . $disposition);
+    header('Accept-Ranges: bytes');
+    header('ETag: ' . $etag);
+    header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $mtime) . ' GMT');
+    header('Cache-Control: private, no-cache');
+    header('X-Content-Type-Options: nosniff');
+    if ($partial) {
+        http_response_code(206);
+        header('Content-Range: bytes ' . $start . '-' . $end . '/' . $size);
+    }
+    header('Content-Length: ' . ($end - $start + 1));
+
+    if ($_SERVER['REQUEST_METHOD'] === 'HEAD') {
+        fclose($fp);
+        return;
+    }
+
+    fseek($fp, $start);
+    $remaining = $end - $start + 1;
+    while ($remaining > 0 && !feof($fp) && !connection_aborted()) {
+        $chunk = fread($fp, min(65536, $remaining));
+        if ($chunk === false || $chunk === '') break;
+        echo $chunk;
+        $remaining -= strlen($chunk);
+        if (ob_get_level() > 0) ob_flush();
+        flush();
+    }
+    fclose($fp);
+}
+
+// ── Signed download links (resumable downloads) ───────────────────────────────
+// After the password check and counting, the recipient is redirected to a
+// time-limited, HMAC-signed GET link. Only this link can be resumed (browsers
+// cannot resume POST downloads) and it does not count again.
+
+const TRANSFER_TICKET_TTL = 21600; // 6 hours
+
+function transfer_ticket_secret(): string
+{
+    global $config;
+    $salt = (string)($config['rate_limit_salt'] ?? '');
+    return $salt !== '' ? $salt . '|dl-ticket' : '';
+}
+
+function transfer_ticket_url(string $token): ?string
+{
+    $secret = transfer_ticket_secret();
+    if ($secret === '') return null;
+    $expires = time() + TRANSFER_TICKET_TTL;
+    $sig     = hash_hmac('sha256', $token . '|' . $expires, $secret);
+    return APP_URL . '/dl.php?d=' . $token . '&e=' . $expires . '&s=' . $sig;
+}
+
+/** Returns 'ok', 'expired' or 'invalid'. */
+function transfer_ticket_check(string $token, string $expires, string $sig): string
+{
+    $secret = transfer_ticket_secret();
+    if ($secret === '' || !preg_match('/^[a-f0-9]{64}$/', $token) || !ctype_digit($expires)) return 'invalid';
+    if (!hash_equals(hash_hmac('sha256', $token . '|' . $expires, $secret), $sig)) return 'invalid';
+    return (int)$expires >= time() ? 'ok' : 'expired';
 }
 
 // ── Alle Transfers laden ──────────────────────────────────────────────────────
