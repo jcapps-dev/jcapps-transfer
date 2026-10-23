@@ -501,7 +501,7 @@ h3 {
 .table-container {
     background: var(--color-white);
     border-radius: 4px;
-    overflow: hidden;
+    overflow-x: auto; /* bei mittlerer Breite scrollen statt Aktionen abschneiden */
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--color-gray-200);
 }
@@ -545,6 +545,10 @@ table tbody tr {
 
 table tbody tr:hover {
     background: color-mix(in srgb, var(--color-pastel-blue) 8%, white);
+}
+
+.table-container td.col-optional {
+    white-space: nowrap;
 }
 
 .td-actions {
@@ -738,7 +742,7 @@ select.form-control {
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
 }

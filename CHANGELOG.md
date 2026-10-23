@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.5] — 2026-10-23
+
+### Bug fix
+
+- Dashboard at medium window widths (~1200–1300 px): the table now scrolls horizontally instead of clipping the "Delete" button
+- Date and size columns no longer wrap; stat cards fit in one row
+
 ## [1.3.4] — 2026-10-23
 
 ### Download page redesign
