@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.9] — 2026-10-23
+
+### Design
+
+- Sign-in page: subline is now "Internal area" instead of "Please sign in with the admin password." — less technical, and tells recipients who end up there that the page is not meant for them
+
 ## [1.3.8] — 2026-10-23
 
 ### Design

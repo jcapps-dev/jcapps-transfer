@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <main class="dl-main">
     <div class="dl-shell">
         <h1 class="dl-title">Sign in</h1>
-        <p class="dl-intro">Please sign in with the admin password.</p>
+        <p class="dl-intro">Internal area</p>
 
         <form method="POST" action="" class="login-form">
             <?= csrf_field() ?>
