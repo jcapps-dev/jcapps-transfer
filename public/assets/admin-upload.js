@@ -325,6 +325,25 @@ document.addEventListener('DOMContentLoaded', function() {
     var generateBtn = document.getElementById('generate-pw-btn');
     if (generateBtn) generateBtn.addEventListener('click', generatePassword);
 
+    // Expiry quick select
+    var lifetimeField = document.getElementById('lifetime-field');
+    var dayChips      = document.querySelectorAll('.chip[data-days]');
+    function syncDayChips() {
+        dayChips.forEach(function(c) {
+            c.classList.toggle('active', c.getAttribute('data-days') === lifetimeField.value);
+        });
+    }
+    if (lifetimeField) {
+        dayChips.forEach(function(c) {
+            c.addEventListener('click', function() {
+                lifetimeField.value = c.getAttribute('data-days');
+                syncDayChips();
+            });
+        });
+        lifetimeField.addEventListener('input', syncDayChips);
+        syncDayChips();
+    }
+
     var uploadForm = document.getElementById('upload-form');
     if (uploadForm) {
         uploadForm.addEventListener('submit', function(e) {

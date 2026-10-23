@@ -1,17 +1,21 @@
 function copyLink(btn) {
     var url = btn.getAttribute('data-url');
     if (!url) return;
-    navigator.clipboard.writeText(url).then(function() {
-        var orig = btn.textContent;
-        btn.textContent = '\u2713 Copied';
-        btn.classList.add('copied');
+    // Swap only the label so the icon is kept
+    var label = btn.querySelector('.btn-label') || btn;
+    var orig  = label.textContent;
+    function flash(text) {
+        label.textContent = text;
         setTimeout(function() {
-            btn.textContent = orig;
+            label.textContent = orig;
             btn.classList.remove('copied');
         }, 2000);
+    }
+    navigator.clipboard.writeText(url).then(function() {
+        btn.classList.add('copied');
+        flash('\u2713 Copied');
     }).catch(function() {
-        btn.textContent = '\u2717 Error';
-        setTimeout(function() { btn.textContent = '\uD83D\uDCCB Link'; }, 2000);
+        flash('\u2717 Error');
     });
 }
 
@@ -53,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (btn) { copyLink(btn); return; }
 
         var confirmBtn = e.target.closest('[data-confirm]');
-        if (confirmBtn) { inlineConfirm(confirmBtn); }
+        if (confirmBtn) { e.preventDefault(); inlineConfirm(confirmBtn); } // submit only after "Yes"
     });
 
     var updateBtn = document.getElementById('do-update-btn');

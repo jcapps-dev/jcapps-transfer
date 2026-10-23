@@ -198,16 +198,20 @@ function dl_show_page(?array $meta, string $status): void
         <?php endif; ?>
 
         <div class="dl-file-info">
-            <div class="dl-filename">
-                <?php
-                $files = $meta['files'];
-                if (count($files) === 1) {
-                    echo htmlspecialchars($files[0]['original_name'], ENT_QUOTES, 'UTF-8');
-                } else {
-                    echo count($files) . ' files (downloaded as ZIP)';
-                }
-                ?>
-            </div>
+            <?php $files = $meta['files']; ?>
+            <?php if (count($files) === 1): ?>
+            <div class="dl-filename"><?= htmlspecialchars($files[0]['original_name'], ENT_QUOTES, 'UTF-8') ?></div>
+            <?php else: ?>
+            <div class="dl-filename"><?= count($files) ?> files <span class="dl-zip-hint">— downloaded as ZIP</span></div>
+            <ul class="dl-file-list">
+                <?php foreach ($files as $f): ?>
+                <li>
+                    <span class="dl-file-name"><?= htmlspecialchars($f['original_name'], ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="dl-file-size"><?= htmlspecialchars(transfer_format_size((int)($f['size'] ?? 0)), ENT_QUOTES, 'UTF-8') ?></span>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+            <?php endif; ?>
             <div class="dl-meta">
                 <span>Size: <?= htmlspecialchars(transfer_format_size(transfer_total_size($meta)), ENT_QUOTES, 'UTF-8') ?></span>
                 <?php

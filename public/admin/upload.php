@@ -130,30 +130,35 @@ $lifetime  = (int)($config['transfer_lifetime_days'] ?? 14);
                                 <div class="form-hint">💡 Multiple files will be offered to the recipient as a ZIP download.</div>
                             </div>
 
+                            <div class="form-row">
                             <div class="form-group">
                                 <label>Password <span style="font-weight:400; color:var(--color-gray-500);">(optional)</span></label>
                                 <div class="input-group">
                                     <input type="text" name="password" id="pw-field" class="form-control"
                                            placeholder="Leave empty = no password"
                                            autocomplete="new-password">
-                                    <button type="button" id="generate-pw-btn" class="btn btn-ghost" title="Generate random password"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg> Generate</button>
+                                    <button type="button" id="generate-pw-btn" class="btn btn-ghost" title="Generate random password"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg><span class="btn-label">Generate</span></button>
                                 </div>
-                                <div class="form-hint">💡 A password only makes sense if it is communicated to the recipient separately (e.g. by phone).</div>
+                                <div class="form-hint">💡 Only useful if shared with the recipient separately (e.g. by phone).</div>
                             </div>
 
                             <div class="form-group">
                                 <label>Maximum Downloads <span style="font-weight:400; color:var(--color-gray-500);">(optional)</span></label>
                                 <input type="number" name="max_downloads" class="form-control"
-                                       placeholder="Leave empty = unlimited" min="1" max="9999"
-                                       style="max-width: 200px;">
-                                <div class="form-hint">💡 E.g. limit to 1 download → link is automatically blocked afterwards.</div>
+                                       placeholder="Empty = unlimited" min="1" max="9999">
+                                <div class="form-hint">💡 The link is blocked automatically afterwards.</div>
                             </div>
 
                             <div class="form-group">
-                                <label>Expiry in days</label>
-                                <input type="number" name="lifetime_days" class="form-control"
-                                       value="<?= (int)$lifetime ?>" min="1" max="365"
-                                       style="max-width: 120px;">
+                                <label for="lifetime-field">Expiry in days</label>
+                                <div class="days-picker">
+                                    <input type="number" name="lifetime_days" id="lifetime-field" class="form-control"
+                                           value="<?= (int)$lifetime ?>" min="1" max="365">
+                                    <?php foreach ([1, 7, 14, 30] as $_d): ?>
+                                    <button type="button" class="chip" data-days="<?= $_d ?>"><?= $_d ?></button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
                             </div>
 
                             <button type="submit" class="btn" id="submit-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Create transfer</button>

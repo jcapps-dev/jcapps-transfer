@@ -194,10 +194,10 @@ if (is_file($_cache_file)) {
                         <thead>
                             <tr>
                                 <th>File(s)</th>
-                                <th>Size</th>
-                                <th>Created</th>
-                                <th>Expires</th>
-                                <th>Downloads</th>
+                                <th class="col-optional">Size</th>
+                                <th class="col-optional">Created</th>
+                                <th class="col-optional">Expires</th>
+                                <th class="col-optional">Downloads</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -240,29 +240,29 @@ if (is_file($_cache_file)) {
                                     <?php if ($has_pw): ?><span title="Password protected" style="margin-left:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><?php endif; ?>
                                     <?php if (count($files) > 1): ?><span style="font-size:0.75rem;color:var(--color-gray-400);margin-left:4px;">(ZIP)</span><?php endif; ?>
                                 </td>
-                                <td style="font-family:'JetBrains Mono',monospace; font-size:0.8125rem;"><?= htmlspecialchars($size, ENT_QUOTES, 'UTF-8') ?></td>
-                                <td style="font-size:0.8125rem;"><?= htmlspecialchars($created, ENT_QUOTES, 'UTF-8') ?></td>
-                                <td style="font-size:0.8125rem;"><?= htmlspecialchars($expires, ENT_QUOTES, 'UTF-8') ?></td>
-                                <td style="font-family:'JetBrains Mono',monospace; font-size:0.8125rem;"><?= htmlspecialchars($dl_text, ENT_QUOTES, 'UTF-8') ?></td>
+                                <td class="col-optional" style="font-family:'JetBrains Mono',monospace; font-size:0.8125rem;"><?= htmlspecialchars($size, ENT_QUOTES, 'UTF-8') ?></td>
+                                <td class="col-optional" style="font-size:0.8125rem;"><?= htmlspecialchars($created, ENT_QUOTES, 'UTF-8') ?></td>
+                                <td class="col-optional" style="font-size:0.8125rem;"><?= htmlspecialchars($expires, ENT_QUOTES, 'UTF-8') ?></td>
+                                <td class="col-optional" style="font-family:'JetBrains Mono',monospace; font-size:0.8125rem;"><?= htmlspecialchars($dl_text, ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><span class="badge <?= $badge_class ?>"><?= $badge_text ?></span></td>
                                 <td>
                                     <div class="td-actions">
                                         <?php if ($status === 'active'): ?>
                                         <button class="btn btn-sm btn-ghost copy-btn"
                                                 title="Copy link"
-                                                data-url="<?= htmlspecialchars($dl_url, ENT_QUOTES, 'UTF-8') ?>"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Link</button>
+                                                data-url="<?= htmlspecialchars($dl_url, ENT_QUOTES, 'UTF-8') ?>"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="btn-label">Link</span></button>
                                         <form method="POST" action="revoke.php" style="display:inline;">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="token" value="<?= htmlspecialchars($t['token'], ENT_QUOTES, 'UTF-8') ?>">
                                             <button type="submit" class="btn btn-sm btn-warning"
-                                                    data-confirm="Revoke transfer?"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> Revoke</button>
+                                                    title="Revoke" data-confirm="Revoke transfer?"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg><span class="btn-label">Revoke</span></button>
                                         </form>
                                         <?php endif; ?>
                                         <form method="POST" action="delete.php" style="display:inline;">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="token" value="<?= htmlspecialchars($t['token'], ENT_QUOTES, 'UTF-8') ?>">
                                             <button type="submit" class="btn btn-sm btn-danger"
-                                                    data-confirm="Delete permanently?"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete</button>
+                                                    title="Delete" data-confirm="Delete permanently?"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg><span class="btn-label">Delete</span></button>
                                         </form>
                                     </div>
                                 </td>

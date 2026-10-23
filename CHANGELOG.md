@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.3.3] — 2026-10-23
+
+### Bug fix
+
+- Inline confirmation for "Revoke" / "Delete" now actually waits for "Yes" — previously the form was submitted immediately while the confirmation was shown
+- "Copy link" keeps its icon after copying
+
+### Design
+
+- Mobile: sidebar collapses to an icon rail instead of disappearing; tables keep the actions column (icon-only) and hide secondary columns
+- Row actions "Revoke" / "Delete" are now outlined and only fill on hover
+- Upload form: password, max downloads and expiry in one row; quick select for expiry (1 / 7 / 14 / 30 days)
+- Download page: multi-file transfers list every file with its size
+
 ## [1.3.2] — 2026-10-23
 
 ### Security hardening

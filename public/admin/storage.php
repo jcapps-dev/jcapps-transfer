@@ -140,9 +140,9 @@ function storage_format_size(int $bytes): string {
                         <thead>
                             <tr style="border-bottom: 1px solid var(--color-gray-200);">
                                 <th style="text-align:left; padding: var(--spacing-sm) var(--spacing-md); font-size:.8125rem; color:var(--color-gray-500); font-weight:600;">Filename</th>
-                                <th style="text-align:right; padding: var(--spacing-sm) var(--spacing-md); font-size:.8125rem; color:var(--color-gray-500); font-weight:600; width:90px;">Size</th>
-                                <th style="text-align:left; padding: var(--spacing-sm) var(--spacing-md); font-size:.8125rem; color:var(--color-gray-500); font-weight:600; width:160px;">Uploaded</th>
-                                <th style="width:220px;"></th>
+                                <th style="text-align:right; padding: var(--spacing-sm) var(--spacing-md); font-size:.8125rem; color:var(--color-gray-500); font-weight:600; width:90px;" class="col-optional">Size</th>
+                                <th style="text-align:left; padding: var(--spacing-sm) var(--spacing-md); font-size:.8125rem; color:var(--color-gray-500); font-weight:600; width:160px;" class="col-optional">Uploaded</th>
+                                <th class="col-actions"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -154,26 +154,26 @@ function storage_format_size(int $bytes): string {
                                         <?= htmlspecialchars($f['name'], ENT_QUOTES, 'UTF-8') ?>
                                     </span>
                                 </td>
-                                <td style="padding: var(--spacing-sm) var(--spacing-md); text-align:right; font-size:.875rem; color:var(--color-gray-500);">
+                                <td class="col-optional" style="padding: var(--spacing-sm) var(--spacing-md); text-align:right; font-size:.875rem; color:var(--color-gray-500);">
                                     <?= storage_format_size($f['size']) ?>
                                 </td>
-                                <td style="padding: var(--spacing-sm) var(--spacing-md); font-size:.875rem; color:var(--color-gray-500);">
+                                <td class="col-optional" style="padding: var(--spacing-sm) var(--spacing-md); font-size:.875rem; color:var(--color-gray-500);">
                                     <?= date('Y-m-d H:i', $f['mtime']) ?>
                                 </td>
-                                <td style="padding: var(--spacing-sm) var(--spacing-md); width:220px;">
+                                <td class="col-actions" style="padding: var(--spacing-sm) var(--spacing-md);">
                                     <div class="td-actions" style="display:flex; gap:6px;">
                                         <a href="storage_download.php?file=<?= urlencode($f['name']) ?>"
-                                           class="btn btn-sm btn-ghost" style="flex:1; justify-content:center;">
+                                           class="btn btn-sm btn-ghost" title="Download" style="flex:1; justify-content:center;">
                                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px; flex-shrink:0;"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
-                                            Download
+                                            <span class="btn-label">Download</span>
                                         </a>
                                         <form method="post" action="storage_delete.php" style="flex:1; display:flex;">
                                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
                                             <input type="hidden" name="file" value="<?= htmlspecialchars($f['name'], ENT_QUOTES, 'UTF-8') ?>">
                                             <button type="submit" class="btn btn-sm btn-danger" style="flex:1; justify-content:center;"
-                                                    data-confirm="Permanently delete this file?">
+                                                    title="Delete" data-confirm="Permanently delete this file?">
                                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px; flex-shrink:0;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                                                Delete
+                                                <span class="btn-label">Delete</span>
                                             </button>
                                         </form>
                                     </div>
