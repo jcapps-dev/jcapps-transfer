@@ -522,11 +522,39 @@ function transfer_send_range(string $path, string $content_type, string $disposi
 
 const TRANSFER_TICKET_TTL = 21600; // 6 hours
 
+/**
+ * HMAC-Schlüssel für signierte Download-Links: eigener Zufallswert (32 Byte),
+ * beim ersten Bedarf in TRANSFER_BASE/.ticket_key angelegt (außerhalb Webroot).
+ * Bewusst unabhängig von rate_limit_salt, damit ein schwacher oder nicht
+ * ersetzter Config-Wert keine fälschbaren Download-Links erlaubt.
+ * Liefert '' wenn kein Schlüssel verfügbar ist (dann wird direkt gestreamt).
+ */
 function transfer_ticket_secret(): string
 {
-    global $config;
-    $salt = (string)($config['rate_limit_salt'] ?? '');
-    return $salt !== '' ? $salt . '|dl-ticket' : '';
+    static $secret = null;
+    if ($secret !== null) return $secret;
+
+    $file  = TRANSFER_BASE . '/.ticket_key';
+    $valid = fn($k) => strlen($k) === 64 && ctype_xdigit($k);
+    $key   = is_file($file) ? trim((string)@file_get_contents($file)) : '';
+
+    if (!$valid($key)) {
+        $tmp = $file . '.' . bin2hex(random_bytes(6)) . '.tmp';
+        if (@file_put_contents($tmp, bin2hex(random_bytes(32))) !== false) {
+            @chmod($tmp, 0600);
+            // Neu: link() legt atomar an und überschreibt nie (parallele Requests
+            // übernehmen den Schlüssel des Gewinners). Defekte Datei: ersetzen.
+            if (!is_file($file) && !@link($tmp, $file) && !is_file($file)) {
+                @rename($tmp, $file);
+            } elseif (is_file($file) && !$valid(trim((string)@file_get_contents($file)))) {
+                @rename($tmp, $file);
+            }
+            @unlink($tmp);
+        }
+        $key = is_file($file) ? trim((string)@file_get_contents($file)) : '';
+        if (!$valid($key)) return $secret = '';
+    }
+    return $secret = $key;
 }
 
 function transfer_ticket_url(string $token): ?string

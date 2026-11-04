@@ -53,6 +53,23 @@ function ratelimit_is_blocked(string $endpoint, string $ip_hash, int $max_reques
 }
 
 /**
+ * Versuch atomar zählen und entscheiden (Zählen + Prüfen in einem Schritt unter flock).
+ * Liefert true, solange das Limit nicht überschritten ist. Anders als
+ * ratelimit_is_blocked() + späteres ratelimit_increment() können parallele
+ * Requests so nicht am Limit vorbeirutschen — vor teuren Prüfungen (bcrypt) nutzen.
+ */
+function ratelimit_hit(string $endpoint, string $ip_hash, int $max_requests, int $window_seconds = 60): bool
+{
+    return ratelimit_increment($endpoint, $ip_hash, $window_seconds) <= $max_requests;
+}
+
+/** Zähler des aktuellen Fensters zurücksetzen (z.B. nach erfolgreichem Login). */
+function ratelimit_reset(string $endpoint, string $ip_hash, int $window_seconds = 60): void
+{
+    @unlink(ratelimit_get_filepath($endpoint, $ip_hash, $window_seconds));
+}
+
+/**
  * Alte Rate-Limit-Dateien aufräumen (älter als 2 Stunden).
  * Wird von cleanup.php aufgerufen.
  */

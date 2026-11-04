@@ -105,9 +105,10 @@ if ($method === 'POST') {
 
     // Passwort prüfen (wenn gesetzt)
     if ($meta['password_hash'] !== null) {
-        // Rate-Limit für Passwort-Versuche: max 5 pro 5 Minuten (pro Token + IP)
+        // Rate-Limit für Passwort-Versuche: max 5 pro 5 Minuten (pro Token + IP),
+        // vor der Prüfung atomar gezählt (gegen parallele Requests)
         $pw_key = 'pw_' . substr($token, 0, 16);
-        if (ratelimit_is_blocked($pw_key, $ip_hash, 5, 300)) {
+        if (!ratelimit_hit($pw_key, $ip_hash, 5, 300)) {
             http_response_code(429);
             dl_show_page($meta, 'pw_ratelimit');
             exit;
@@ -115,11 +116,11 @@ if ($method === 'POST') {
 
         $pw = $_POST['password'] ?? '';
         if (!password_verify($pw, $meta['password_hash'])) {
-            ratelimit_increment($pw_key, $ip_hash, 300);
             log_event('dl_wrong_password', ['pfx' => substr($token, 0, 8)]);
             dl_show_page($meta, 'wrong_password');
             exit;
         }
+        ratelimit_reset($pw_key, $ip_hash, 300);
     }
 
     // Claim download (validity + counter atomically, safe against parallel requests)

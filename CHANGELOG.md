@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.11] — 2026-11-04
+
+### Security
+
+- **Rate limits can no longer be bypassed with parallel requests:** admin sign-in and transfer-password attempts are now counted atomically *before* the (slow) bcrypt check. Previously the counter was read first and only increased after a failed check, so a burst of simultaneous requests could get far more than 10 (sign-in) / 5 (transfer password) guesses per 5 minutes. A successful attempt resets the counter.
+- **Dedicated key for signed download links:** links are now signed with a random 256-bit key stored in `transfer_base_path/.ticket_key` (created automatically on first use, mode 0600) instead of `rate_limit_salt`. A weak or unchanged salt from the example config can no longer be used to forge links that skip the password and download limit. Download links issued before the update (valid for max. 6 h) stop working once.
+
 ## [1.3.10] — 2026-10-23
 
 ### Feature

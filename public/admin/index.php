@@ -39,17 +39,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $ip_hash = log_ip_hash(log_get_ip());
 
-    // Rate-Limit: max 10 Login-Versuche pro 5 Minuten
-    if (ratelimit_is_blocked('login', $ip_hash, 10, 300)) {
+    // Rate-Limit: max 10 Login-Versuche pro 5 Minuten — der Versuch wird vor der
+    // Passwortprüfung atomar gezählt, damit parallele Requests nicht durchrutschen
+    if (!ratelimit_hit('login', $ip_hash, 10, 300)) {
         $error = 'Too many attempts. Please wait 5 minutes.';
     } else {
         $password = $_POST['password'] ?? '';
         if (auth_login($password)) {
+            ratelimit_reset('login', $ip_hash, 300);
             log_event('admin_login');
             header('Location: ' . APP_URL . '/admin/dashboard.php');
             exit;
         } else {
-            ratelimit_increment('login', $ip_hash, 300);
             log_event('admin_login_failed');
             // Kurze Verzögerung gegen Timing-Angriffe
             usleep(random_int(100000, 400000));
