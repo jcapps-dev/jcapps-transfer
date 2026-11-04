@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.13] — 2026-11-04
+
+### Improvement
+
+- **PHP version warning picks up new PHP branches automatically.** Support-end dates are now read from php.net (`releases/states.php`) once a day, together with the patch check. The built-in table is only used as a fallback when php.net cannot be reached, so it no longer needs updating when a new PHP version is released.
+
 ## [1.3.12] — 2026-11-04
 
 ### Privacy

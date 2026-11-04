@@ -2,9 +2,10 @@
 /**
  * PHP-Versionsprüfung für den Admin-Bereich
  *
- * 1. Support-Ende des PHP-Zweigs (fest hinterlegt, funktioniert offline)
- * 2. Patch-Stand: neuester Patch des Zweigs laut php.net (max. 1× täglich abgefragt,
- *    gecacht). Gewarnt wird, wenn ein neuerer Patch seit über 30 Tagen verfügbar
+ * 1. Support-Ende des PHP-Zweigs laut php.net — neue Zweige kommen damit automatisch
+ *    dazu. Ohne Verbindung zu php.net greift die eingebaute Tabelle.
+ * 2. Patch-Stand: neuester Patch des Zweigs laut php.net.
+ *    Beides wird max. 1× täglich abgefragt und gecacht. Gewarnt wird, wenn ein neuerer Patch seit über 30 Tagen verfügbar
  *    ist oder mindestens zwei Patches fehlen — der Hoster spielt Patches mit etwas
  *    Verzögerung ein, ein einzelner frischer Patch löst daher noch keine Warnung aus.
  *
@@ -12,8 +13,9 @@
  * (kann auf Shared Hosting von `php -v` auf der Kommandozeile abweichen).
  */
 
-// Ende der Sicherheitsupdates je Zweig — Quelle: https://www.php.net/supported-versions.php
-// Neue Zweige bei Bedarf ergänzen; unbekannte, neuere Zweige gelten als unterstützt.
+// Ersatz-Tabelle (nur wenn php.net nicht erreichbar ist): Ende der Sicherheitsupdates
+// je Zweig — Quelle: https://www.php.net/supported-versions.php. Muss nicht gepflegt
+// werden; unbekannte, neuere Zweige gelten ohne Verbindung als unterstützt.
 const PHPCHECK_SECURITY_EOL = [
     '8.1' => '2025-12-31',
     '8.2' => '2026-12-31',
@@ -32,15 +34,16 @@ function phpcheck_status(): ?array
 {
     $branch  = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
     $current = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
-    $oldest  = array_key_first(PHPCHECK_SECURITY_EOL);
+    $remote  = phpcheck_remote($branch);
 
-    // 1. Support-Ende
-    if (version_compare($branch, $oldest, '<')) {
+    // 1. Support-Ende: Daten von php.net, ohne Verbindung die eingebaute Tabelle
+    $eol_date = $remote['eol'] ?? PHPCHECK_SECURITY_EOL[$branch] ?? null;
+    if ($eol_date === null && version_compare($branch, array_key_first(PHPCHECK_SECURITY_EOL), '<')) {
         return ['level' => 'error', 'text' =>
             "This server runs PHP {$current}, which no longer receives security updates. Please switch to a supported PHP version in your hosting control panel."];
     }
-    if (isset(PHPCHECK_SECURITY_EOL[$branch])) {
-        $eol      = strtotime(PHPCHECK_SECURITY_EOL[$branch] . ' 23:59:59');
+    if ($eol_date !== null) {
+        $eol      = strtotime($eol_date . ' 23:59:59');
         $eol_text = date('Y-m-d', $eol);
         if (time() > $eol) {
             return ['level' => 'error', 'text' =>
@@ -53,7 +56,7 @@ function phpcheck_status(): ?array
     }
 
     // 2. Patch-Stand
-    $latest = phpcheck_latest_patch($branch);
+    $latest = $remote['version'] !== null ? $remote : null;
     // Warnung, wenn der neueste Patch seit über 30 Tagen verfügbar ist oder schon
     // mindestens zwei Patches fehlen (PHP veröffentlicht etwa alle 4 Wochen)
     $behind = $latest !== null && version_compare($latest['version'], $current, '>')
@@ -68,34 +71,47 @@ function phpcheck_status(): ?array
 }
 
 /**
- * Neuester Patch eines Zweigs laut php.net: ['version' => '8.4.x', 'date' => timestamp] oder null.
+ * Daten von php.net für einen Zweig:
+ * ['version' => neuester Patch|null, 'date' => Timestamp|null, 'eol' => 'YYYY-MM-DD'|null]
+ * - Patch-Stand:  https://www.php.net/releases/?json&version=8.4
+ * - Support-Ende: https://www.php.net/releases/states.php?json (alle Zweige, auch neue)
  * Ergebnis wird 24 h gecacht — auch Fehlschläge, damit das Dashboard nicht bei jedem
  * Aufruf auf einen Timeout wartet.
  */
-function phpcheck_latest_patch(string $branch): ?array
+function phpcheck_remote(string $branch): array
 {
     $cache = TRANSFER_BASE . '/php_check.json';
     $data  = is_file($cache) ? json_decode((string)@file_get_contents($cache), true) : null;
 
-    if (!is_array($data) || ($data['branch'] ?? '') !== $branch || time() - ($data['checked'] ?? 0) > 86400) {
-        $data = ['branch' => $branch, 'checked' => time(), 'version' => null, 'date' => null];
-        if (filter_var(ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN)) {
-            $ctx  = stream_context_create(['http' => [
-                'header'  => "User-Agent: filetransfer-phpcheck\r\n",
-                'timeout' => 3,
-            ]]);
-            $json = @file_get_contents('https://www.php.net/releases/?json&version=' . rawurlencode($branch), false, $ctx);
-            $rel  = $json ? json_decode($json, true) : null;
-            $ver  = is_array($rel) ? (string)($rel['version'] ?? '') : '';
-            $ts   = is_array($rel) ? strtotime((string)($rel['date'] ?? '')) : false;
-            if (preg_match('/^\d+\.\d+\.\d+$/', $ver) && $ts) {
-                $data['version'] = $ver;
-                $data['date']    = $ts;
-            }
-        }
-        @file_put_contents($cache, json_encode($data), LOCK_EX);
-        @chmod($cache, 0600);
+    if (is_array($data) && ($data['branch'] ?? '') === $branch && array_key_exists('eol', $data)
+        && time() - (int)($data['checked'] ?? 0) <= 86400) {
+        return $data;
     }
 
-    return $data['version'] !== null ? ['version' => $data['version'], 'date' => (int)$data['date']] : null;
+    $data = ['branch' => $branch, 'checked' => time(), 'version' => null, 'date' => null, 'eol' => null];
+    if (filter_var(ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN)) {
+        $ctx = stream_context_create(['http' => [
+            'header'  => "User-Agent: filetransfer-phpcheck\r\n",
+            'timeout' => 3,
+        ]]);
+
+        $rel = json_decode((string)@file_get_contents('https://www.php.net/releases/?json&version=' . rawurlencode($branch), false, $ctx), true);
+        $ver = is_array($rel) ? (string)($rel['version'] ?? '') : '';
+        $ts  = is_array($rel) ? strtotime((string)($rel['date'] ?? '')) : false;
+        if (preg_match('/^\d+\.\d+\.\d+$/', $ver) && $ts) {
+            $data['version'] = $ver;
+            $data['date']    = $ts;
+        }
+
+        $states = json_decode((string)@file_get_contents('https://www.php.net/releases/states.php?json', false, $ctx), true);
+        $major  = explode('.', $branch)[0];
+        $eol    = is_array($states) ? ($states[$major][$branch]['security_support_end'] ?? '') : '';
+        if (is_string($eol) && preg_match('/^\d{4}-\d{2}-\d{2}/', $eol, $m)) {
+            $data['eol'] = $m[0];
+        }
+    }
+    @file_put_contents($cache, json_encode($data), LOCK_EX);
+    @chmod($cache, 0600);
+
+    return $data;
 }
