@@ -46,6 +46,9 @@ if (is_dir(STORAGE_DIR)) {
 // Flash-Nachrichten
 $flash = flash_get();
 
+// PHP-Version des Servers prüfen (Support-Ende, ausstehende Patches)
+$php_warning = phpcheck_status();
+
 // Update-Check (einmal täglich, gecacht)
 $update_available = null;
 $update_version   = null;
@@ -154,6 +157,13 @@ if (is_file($_cache_file)) {
                     <?= htmlspecialchars($m['text'], ENT_QUOTES, 'UTF-8') ?>
                 </div>
                 <?php endforeach; ?>
+
+                <?php if ($php_warning): ?>
+                <div class="msg msg-<?= $php_warning['level'] === 'error' ? 'error' : 'warning' ?>">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <?= htmlspecialchars($php_warning['text'], ENT_QUOTES, 'UTF-8') ?>
+                </div>
+                <?php endif; ?>
 
                 <!-- Statistiken -->
                 <div class="stats-grid">

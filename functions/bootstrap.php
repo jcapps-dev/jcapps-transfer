@@ -51,3 +51,4 @@ require_once __DIR__ . '/logger.php';
 require_once __DIR__ . '/ratelimit.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/transfer.php';
+require_once __DIR__ . '/phpcheck.php';

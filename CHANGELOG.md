@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.3.12] — 2026-11-04
+
+### Privacy
+
+- **Fonts are now served locally.** IBM Plex Sans and JetBrains Mono are bundled in `public/assets/fonts/` (SIL Open Font License) instead of being loaded from Google Fonts, so visitors' IP addresses are no longer sent to Google. Google domains removed from the Content Security Policy.
+
+### Feature
+
+- **PHP version warning on the dashboard.** Admins see a warning when the server's PHP version no longer receives security updates (red), when support ends within 6 months (yellow), or when the host has not installed an available PHP patch release (yellow — after 30 days, or immediately if two or more patches behind). The patch check queries php.net at most once a day; the support-end check works offline.
+
 ## [1.3.11] — 2026-11-04
 
 ### Security

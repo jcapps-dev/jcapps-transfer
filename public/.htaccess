@@ -9,6 +9,9 @@ RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 RewriteRule ^dl/([a-zA-Z0-9]{8})$ dl.php?t=$1 [QSA,L]
 
+# Lokale Schriften mit korrektem MIME-Typ ausliefern
+AddType font/woff2 .woff2
+
 # Security Headers
 <IfModule mod_headers.c>
     Header always set X-Frame-Options "DENY"
@@ -16,7 +19,7 @@ RewriteRule ^dl/([a-zA-Z0-9]{8})$ dl.php?t=$1 [QSA,L]
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
-    Header always set Content-Security-Policy "default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; script-src 'self'; img-src 'self' data:; frame-ancestors 'none'"
+    Header always set Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; img-src 'self' data:; frame-ancestors 'none'"
 </IfModule>
 
 # Sensible Dateitypen sperren
